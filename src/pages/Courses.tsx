@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, Calculator, Filter, BookOpen, Users, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import GPACalculator from "@/components/courses/GPACalculator";
 
 // Sample course data - will be replaced with actual course data
 const courses = [
@@ -198,6 +199,12 @@ const Courses = () => {
             </div>
           </div>
         </section>
+
+        {/* GPA Calculator Modal */}
+        <GPACalculator 
+          isOpen={showGPACalculator} 
+          onClose={() => setShowGPACalculator(false)} 
+        />
 
         {/* Courses List */}
         <section className="py-12">
