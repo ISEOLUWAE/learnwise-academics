@@ -91,10 +91,10 @@ const CourseDetail = () => {
     setIsAuthenticated(true);
   }, []);
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  // For demo purposes, allow access without authentication
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" replace />;
+  // }
 
   const course = courseData[courseId || ""];
   
