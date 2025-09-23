@@ -4,6 +4,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Clock, Users, Star } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import mathCourse from "@/assets/math-course.jpg";
+import computerCourse from "@/assets/computer-course.jpg";
+import englishCourse from "@/assets/english-course.jpg";
+import physicsCourse from "@/assets/physics-course.jpg";
 
 const featuredCourses = [
   {
@@ -16,7 +21,8 @@ const featuredCourses = [
     students: 1250,
     rating: 4.8,
     duration: "12 weeks",
-    thumbnail: "bg-gradient-to-br from-blue-500 to-purple-600"
+    thumbnail: mathCourse,
+    courseId: "mth101"
   },
   {
     id: 2,
@@ -28,7 +34,8 @@ const featuredCourses = [
     students: 980,
     rating: 4.9,
     duration: "15 weeks",
-    thumbnail: "bg-gradient-to-br from-green-500 to-blue-600"
+    thumbnail: computerCourse,
+    courseId: "cos101"
   },
   {
     id: 3,
@@ -40,7 +47,8 @@ const featuredCourses = [
     students: 1500,
     rating: 4.6,
     duration: "12 weeks",
-    thumbnail: "bg-gradient-to-br from-purple-500 to-pink-600"
+    thumbnail: englishCourse,
+    courseId: "gst111"
   },
   {
     id: 4,
@@ -52,13 +60,14 @@ const featuredCourses = [
     students: 890,
     rating: 4.7,
     duration: "14 weeks",
-    thumbnail: "bg-gradient-to-br from-orange-500 to-red-600"
+    thumbnail: physicsCourse,
+    courseId: "phy101"
   }
 ];
 
 const FeaturedCourses = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const coursesPerPage = 3;
+  const coursesPerPage = window.innerWidth < 768 ? 1 : window.innerWidth < 1024 ? 2 : 3;
   const maxIndex = Math.max(0, featuredCourses.length - coursesPerPage);
 
   const nextSlide = () => {
@@ -117,11 +126,16 @@ const FeaturedCourses = () => {
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="w-full md:w-1/3 flex-shrink-0 px-3"
+                  className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-2 md:px-3"
                 >
                   <Card className="card-hover bg-bg-secondary/50 backdrop-blur border-white/10 h-full">
                     {/* Course thumbnail */}
-                    <div className={`h-40 ${course.thumbnail} rounded-t-lg relative overflow-hidden`}>
+                    <div className="h-40 rounded-t-lg relative overflow-hidden">
+                      <img 
+                        src={course.thumbnail} 
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                      />
                       <div className="absolute inset-0 bg-black/20" />
                       <Badge className="absolute top-3 left-3 bg-white/20 text-white border-white/30">
                         {course.level}
@@ -161,9 +175,11 @@ const FeaturedCourses = () => {
                     </CardContent>
 
                     <CardFooter>
-                      <Button variant="gradient" className="w-full">
-                        View Course
-                      </Button>
+                      <Link to={`/course-detail/${course.courseId}`} className="w-full">
+                        <Button variant="gradient" className="w-full">
+                          View Course
+                        </Button>
+                      </Link>
                     </CardFooter>
                   </Card>
                 </motion.div>

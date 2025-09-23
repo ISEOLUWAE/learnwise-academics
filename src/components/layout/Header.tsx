@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Menu, X, BookOpen, User, LogOut } from "lucide-react";
+import { Menu, X, BookOpen, User, LogOut, Calculator, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import GPACalculator from "@/components/courses/GPACalculator";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isGPAOpen, setIsGPAOpen] = useState(false);
   const location = useLocation();
-  const isLoggedIn = false; // This will be connected to Supabase auth later
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -55,25 +58,39 @@ const Header = () => {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsGPAOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Calculator className="h-4 w-4" />
+              GPA Calculator
+            </Button>
+            
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <User className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm">
+                  {user.email}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="flex items-center gap-2"
+                >
                   <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm">
+              <Link to="/login">
+                <Button variant="gradient" size="sm" className="flex items-center gap-2">
+                  <LogIn className="h-4 w-4" />
                   Login
                 </Button>
-                <Button variant="gradient" size="sm">
-                  Sign Up
-                </Button>
-              </div>
+              </Link>
             )}
           </div>
 
@@ -112,30 +129,53 @@ const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t border-white/10">
-                {isLoggedIn ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => {
+                    setIsGPAOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <Calculator className="h-4 w-4 mr-2" />
+                  GPA Calculator
+                </Button>
+                
+                {user ? (
                   <>
-                    <Button variant="ghost" size="sm" className="w-full">
-                      Profile
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full">
+                    <div className="text-center text-sm text-muted-foreground py-2">
+                      {user.email}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        signOut();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
                       Logout
                     </Button>
                   </>
                 ) : (
-                  <>
-                    <Button variant="ghost" size="sm" className="w-full">
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="gradient" size="sm" className="w-full">
+                      <LogIn className="h-4 w-4 mr-2" />
                       Login
                     </Button>
-                    <Button variant="gradient" size="sm" className="w-full">
-                      Sign Up
-                    </Button>
-                  </>
+                  </Link>
                 )}
               </div>
             </nav>
           </motion.div>
         )}
       </div>
+
+      {/* GPA Calculator Modal */}
+      <GPACalculator isOpen={isGPAOpen} onClose={() => setIsGPAOpen(false)} />
     </motion.header>
   );
 };

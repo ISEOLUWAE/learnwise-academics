@@ -62,10 +62,10 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
   };
 
   const addCourse = () => {
-    if (!newCourse.name || !newCourse.unit || !newCourse.score) {
+    if (!newCourse.unit || !newCourse.score) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all course details",
+        description: "Please fill in unit and score",
         variant: "destructive"
       });
       return;
@@ -86,7 +86,7 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
     const gradePoint = getGradePoint(score);
     const course: Course = {
       id: Date.now().toString(),
-      name: newCourse.name,
+      name: newCourse.name || `Course ${courses.length + 1}`,
       unit,
       score,
       gradePoint
@@ -158,10 +158,10 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="courseName">Course Name</Label>
+                  <Label htmlFor="courseName">Course Name (Optional)</Label>
                   <Input
                     id="courseName"
-                    placeholder="e.g., Mathematics"
+                    placeholder="e.g., Mathematics (Optional)"
                     value={newCourse.name}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, name: e.target.value }))}
                   />

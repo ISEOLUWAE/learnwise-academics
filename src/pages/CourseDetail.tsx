@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ import {
   GraduationCap,
   Play
 } from "lucide-react";
+import QuizComponent from "@/components/quiz/QuizComponent";
 
 // Mock course data - would come from database
 const courseData: Record<string, any> = {
@@ -82,19 +84,24 @@ const courseData: Record<string, any> = {
 
 const CourseDetail = () => {
   const { courseId } = useParams();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, loading } = useAuth();
   
-  // Mock authentication check - replace with actual auth logic
-  useEffect(() => {
-    // For demo purposes, we'll assume user is authenticated
-    // In real app, check Supabase auth status
-    setIsAuthenticated(true);
-  }, []);
+  if (loading) {
+    return (
+      <Layout>
+        <div className="pt-20 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
-  // For demo purposes, allow access without authentication
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   const course = courseData[courseId || ""];
   
@@ -280,55 +287,7 @@ const CourseDetail = () => {
                 </TabsContent>
 
                 <TabsContent value="quiz" className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <Card className="bg-gradient-primary text-white">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Trophy className="h-5 w-5" />
-                            Take Quiz
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="mb-4 opacity-90">
-                            Test your knowledge with interactive quizzes and track your progress.
-                          </p>
-                          <Button variant="glass" className="w-full">
-                            Start Quiz
-                          </Button>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Trophy className="h-5 w-5" />
-                            Leaderboard
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            {course.leaderboard.map((user: any, index: number) => (
-                              <div key={index} className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white text-sm font-medium">
-                                  {user.avatar}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="font-medium">{user.name}</p>
-                                  <p className="text-sm text-muted-foreground">Score: {user.score}%</p>
-                                </div>
-                                <Badge variant="outline">#{index + 1}</Badge>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </motion.div>
+                  <QuizComponent courseId={courseId || ""} courseTitle={course.title} />
                 </TabsContent>
 
                 <TabsContent value="community" className="space-y-6">
