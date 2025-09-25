@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,15 @@ import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, XCircle, Trophy, RotateCcw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Question {
-  id: number;
+  id: string;
   question: string;
   options: string[];
-  correctAnswer: number;
-  explanation: string;
+  correct_answer: number;
+  explanation?: string;
 }
 
 interface QuizComponentProps {
@@ -21,65 +23,82 @@ interface QuizComponentProps {
   courseTitle: string;
 }
 
-// Sample quiz questions - would come from database
-const quizQuestions: Record<string, Question[]> = {
-  "mth101": [
-    {
-      id: 1,
-      question: "What is the value of x in the equation 2x + 5 = 15?",
-      options: ["5", "10", "15", "20"],
-      correctAnswer: 0,
-      explanation: "To solve 2x + 5 = 15, subtract 5 from both sides to get 2x = 10, then divide by 2 to get x = 5."
-    },
-    {
-      id: 2,
-      question: "What is sin(90°)?",
-      options: ["0", "1", "-1", "undefined"],
-      correctAnswer: 1,
-      explanation: "sin(90°) = 1. This is a fundamental trigonometric value."
-    },
-    {
-      id: 3,
-      question: "What is the derivative of x²?",
-      options: ["x", "2x", "x²", "2"],
-      correctAnswer: 1,
-      explanation: "Using the power rule, the derivative of x² is 2x."
-    }
-  ],
-  "cos101": [
-    {
-      id: 1,
-      question: "What does CPU stand for?",
-      options: ["Central Processing Unit", "Computer Processing Unit", "Central Program Unit", "Computer Program Unit"],
-      correctAnswer: 0,
-      explanation: "CPU stands for Central Processing Unit, which is the main component that executes instructions."
-    },
-    {
-      id: 2,
-      question: "Which of the following is a programming language?",
-      options: ["HTML", "CSS", "JavaScript", "HTTP"],
-      correctAnswer: 2,
-      explanation: "JavaScript is a programming language, while HTML and CSS are markup languages and HTTP is a protocol."
-    },
-    {
-      id: 3,
-      question: "What is binary code primarily composed of?",
-      options: ["Letters A-Z", "Numbers 0-9", "Numbers 0-1", "Symbols"],
-      correctAnswer: 2,
-      explanation: "Binary code uses only 0s and 1s to represent information in computers."
-    }
-  ]
-};
-
 const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
+  const { user } = useAuth();
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const questions = quizQuestions[courseId] || [];
+  useEffect(() => {
+    fetchQuizQuestions();
+  }, [courseId]);
+
+  const fetchQuizQuestions = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('quiz_questions')
+        .select('*')
+        .eq('course_id', courseId);
+
+      if (error) {
+        console.error('Error fetching quiz questions:', error);
+        return;
+      }
+
+      if (data) {
+        const formattedQuestions = data.map(q => ({
+          ...q,
+          options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as string)
+        }));
+        setQuestions(formattedQuestions);
+      }
+    } catch (error) {
+      console.error('Error fetching quiz questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateLeaderboard = async (finalScore: number) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('leaderboard')
+        .upsert({
+          course_id: courseId,
+          user_id: user.id,
+          name: user.email?.split('@')[0] || 'Anonymous',
+          score: finalScore,
+          avatar: user.email?.charAt(0).toUpperCase() || 'A'
+        }, {
+          onConflict: 'course_id,user_id'
+        });
+
+      if (error) {
+        console.error('Error updating leaderboard:', error);
+      }
+    } catch (error) {
+      console.error('Error updating leaderboard:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
+        <CardContent className="p-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading quiz questions...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (questions.length === 0) {
     return (
@@ -99,7 +118,7 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
     setSelectedAnswer(value);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const answerIndex = parseInt(selectedAnswer);
     const newAnswers = [...answers, answerIndex];
     setAnswers(newAnswers);
@@ -110,10 +129,12 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
     } else {
       // Quiz completed
       const correctCount = newAnswers.reduce((count, answer, index) => {
-        return count + (answer === questions[index].correctAnswer ? 1 : 0);
+        return count + (answer === questions[index].correct_answer ? 1 : 0);
       }, 0);
+      const finalScore = Math.round((correctCount / questions.length) * 100);
       setScore(correctCount);
       setQuizCompleted(true);
+      await updateLeaderboard(finalScore);
     }
   };
 
@@ -187,7 +208,7 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
 
         {questions.map((question, index) => {
           const userAnswer = answers[index];
-          const isCorrect = userAnswer === question.correctAnswer;
+          const isCorrect = userAnswer === question.correct_answer;
           
           return (
             <Card key={question.id} className="bg-bg-secondary/50 backdrop-blur border-white/10">
@@ -207,7 +228,7 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
                 <div className="space-y-2">
                   {question.options.map((option, optionIndex) => {
                     let bgColor = "";
-                    if (optionIndex === question.correctAnswer) {
+                    if (optionIndex === question.correct_answer) {
                       bgColor = "bg-green-500/20 border-green-500";
                     } else if (optionIndex === userAnswer && !isCorrect) {
                       bgColor = "bg-red-500/20 border-red-500";
@@ -219,7 +240,7 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
                         className={`p-3 rounded-lg border ${bgColor || "border-white/10"}`}
                       >
                         {option}
-                        {optionIndex === question.correctAnswer && (
+                        {optionIndex === question.correct_answer && (
                           <Badge variant="outline" className="ml-2 text-green-500 border-green-500">
                             Correct
                           </Badge>
@@ -234,11 +255,13 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
                   })}
                 </div>
                 
-                <div className="p-3 rounded-lg bg-blue-500/20 border border-blue-500/30">
-                  <p className="text-sm">
-                    <strong>Explanation:</strong> {question.explanation}
-                  </p>
-                </div>
+                {question.explanation && (
+                  <div className="p-3 rounded-lg bg-blue-500/20 border border-blue-500/30">
+                    <p className="text-sm">
+                      <strong>Explanation:</strong> {question.explanation}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );

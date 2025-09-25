@@ -175,7 +175,7 @@ const FeaturedCourses = () => {
                     </CardContent>
 
                     <CardFooter>
-                      <Link to={`/course-detail/${course.courseId}`} className="w-full">
+                      <Link to={`/course/${course.courseId}`} className="w-full">
                         <Button variant="gradient" className="w-full">
                           View Course
                         </Button>

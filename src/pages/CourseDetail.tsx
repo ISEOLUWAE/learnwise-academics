@@ -20,73 +20,114 @@ import {
   Play
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock course data - would come from database
-const courseData: Record<string, any> = {
-  "mth101": {
-    code: "MTH 101",
-    title: "Elementary Mathematics I",
-    level: "100",
-    semester: "First",
-    units: 2,
-    department: "Computer Science",
-    status: "Compulsory",
-    description: "This course covers fundamental mathematical concepts including algebra, trigonometry, and basic calculus. Students will develop problem-solving skills essential for computer science applications.",
-    overview: "Elementary Mathematics I is designed to provide students with a solid foundation in mathematical concepts. The course emphasizes practical applications in computer science and prepares students for advanced mathematical courses.",
-    textbooks: [
-      { title: "Mathematics for Computer Science", author: "John Smith", year: 2023, downloadLink: "#" },
-      { title: "Algebra and Trigonometry", author: "Jane Doe", year: 2022, downloadLink: "#" }
-    ],
-    materials: [
-      { type: "video", title: "Introduction to Algebra", duration: "45 min", link: "#" },
-      { type: "slides", title: "Trigonometric Functions", pages: 32, link: "#" },
-      { type: "notes", title: "Course Notes - Week 1", link: "#" }
-    ],
-    pastQuestions: [
-      { year: 2023, semester: "First", link: "#" },
-      { year: 2022, semester: "First", link: "#" },
-      { year: 2021, semester: "First", link: "#" }
-    ],
-    leaderboard: [
-      { name: "John Doe", score: 98, avatar: "JD" },
-      { name: "Jane Smith", score: 95, avatar: "JS" },
-      { name: "Mike Johnson", score: 92, avatar: "MJ" }
-    ]
-  },
-  "cos101": {
-    code: "COS 101",
-    title: "Introduction to Computing Sciences",
-    level: "100",
-    semester: "First",
-    units: 3,
-    department: "Computer Science",
-    status: "Compulsory",
-    description: "Introduction to fundamental computing concepts, programming basics, and computer systems.",
-    overview: "This course introduces students to the world of computing, covering basic programming concepts, computer systems, and computational thinking.",
-    textbooks: [
-      { title: "Introduction to Computer Science", author: "Robert Williams", year: 2023, downloadLink: "#" }
-    ],
-    materials: [
-      { type: "video", title: "Programming Fundamentals", duration: "60 min", link: "#" },
-      { type: "slides", title: "Computer Systems Overview", pages: 45, link: "#" }
-    ],
-    pastQuestions: [
-      { year: 2023, semester: "First", link: "#" },
-      { year: 2022, semester: "First", link: "#" }
-    ],
-    leaderboard: [
-      { name: "Sarah Connor", score: 97, avatar: "SC" },
-      { name: "Tom Brady", score: 94, avatar: "TB" },
-      { name: "Lisa Johnson", score: 91, avatar: "LJ" }
-    ]
-  }
-};
+interface Course {
+  id: string;
+  code: string;
+  title: string;
+  level: string;
+  semester: string;
+  units: number;
+  department: string;
+  status: string;
+  description: string;
+  overview: string;
+}
+
+interface Textbook {
+  id: string;
+  title: string;
+  author: string;
+  year: number;
+  download_link: string;
+}
+
+interface Material {
+  id: string;
+  type: string;
+  title: string;
+  duration?: string;
+  pages?: number;
+  link: string;
+}
+
+interface PastQuestion {
+  id: string;
+  year: number;
+  semester: string;
+  link: string;
+}
+
+interface LeaderboardEntry {
+  id: string;
+  name: string;
+  score: number;
+  avatar: string;
+}
 
 const CourseDetail = () => {
-  const { courseId } = useParams();
+  const { courseCode } = useParams();
   const { user, loading } = useAuth();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [textbooks, setTextbooks] = useState<Textbook[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [pastQuestions, setPastQuestions] = useState<PastQuestion[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [courseLoading, setCourseLoading] = useState(true);
+
+  useEffect(() => {
+    if (courseCode) {
+      fetchCourseData();
+    }
+  }, [courseCode]);
+
+  const fetchCourseData = async () => {
+    try {
+      setCourseLoading(true);
+      
+      // Format course code for database lookup
+      const formattedCode = courseCode?.replace(/([a-zA-Z]+)(\d+)/, '$1 $2').toUpperCase();
+      
+      // Fetch course details
+      const { data: courseData, error: courseError } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('code', formattedCode)
+        .single();
+
+      if (courseError) {
+        console.error('Error fetching course:', courseError);
+        return;
+      }
+
+      if (!courseData) {
+        return;
+      }
+
+      setCourse(courseData);
+
+      // Fetch related data
+      const [textbooksResult, materialsResult, pastQuestionsResult, leaderboardResult] = await Promise.all([
+        supabase.from('textbooks').select('*').eq('course_id', courseData.id),
+        supabase.from('materials').select('*').eq('course_id', courseData.id),
+        supabase.from('past_questions').select('*').eq('course_id', courseData.id),
+        supabase.from('leaderboard').select('*').eq('course_id', courseData.id).order('score', { ascending: false })
+      ]);
+
+      if (textbooksResult.data) setTextbooks(textbooksResult.data);
+      if (materialsResult.data) setMaterials(materialsResult.data);
+      if (pastQuestionsResult.data) setPastQuestions(pastQuestionsResult.data);
+      if (leaderboardResult.data) setLeaderboard(leaderboardResult.data);
+
+    } catch (error) {
+      console.error('Error fetching course data:', error);
+    } finally {
+      setCourseLoading(false);
+    }
+  };
   
-  if (loading) {
+  if (loading || courseLoading) {
     return (
       <Layout>
         <div className="pt-20 min-h-screen flex items-center justify-center">
@@ -103,8 +144,6 @@ const CourseDetail = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const course = courseData[courseId || ""];
-  
   if (!course) {
     return <Navigate to="/courses" replace />;
   }
@@ -203,9 +242,9 @@ const CourseDetail = () => {
 
                 <TabsContent value="textbooks" className="space-y-6">
                   <div className="grid gap-4">
-                    {course.textbooks.map((book: any, index: number) => (
+                    {textbooks.map((book, index) => (
                       <motion.div
-                        key={index}
+                        key={book.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -231,9 +270,9 @@ const CourseDetail = () => {
 
                 <TabsContent value="materials" className="space-y-6">
                   <div className="grid gap-4">
-                    {course.materials.map((material: any, index: number) => (
+                    {materials.map((material, index) => (
                       <motion.div
-                        key={index}
+                        key={material.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -245,7 +284,7 @@ const CourseDetail = () => {
                               <div>
                                 <h3 className="font-semibold">{material.title}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                  {material.duration || `${material.pages} pages`}
+                                  {material.duration || (material.pages ? `${material.pages} pages` : '')}
                                 </p>
                               </div>
                             </div>
@@ -262,9 +301,9 @@ const CourseDetail = () => {
 
                 <TabsContent value="questions" className="space-y-6">
                   <div className="grid gap-4">
-                    {course.pastQuestions.map((question: any, index: number) => (
+                    {pastQuestions.map((question, index) => (
                       <motion.div
-                        key={index}
+                        key={question.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -287,7 +326,7 @@ const CourseDetail = () => {
                 </TabsContent>
 
                 <TabsContent value="quiz" className="space-y-6">
-                  <QuizComponent courseId={courseId || ""} courseTitle={course.title} />
+                  <QuizComponent courseId={course.id} courseTitle={course.title} />
                 </TabsContent>
 
                 <TabsContent value="community" className="space-y-6">
@@ -299,17 +338,28 @@ const CourseDetail = () => {
                     <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <MessageCircle className="h-5 w-5" />
-                          Course Community
+                          <Trophy className="h-5 w-5" />
+                          Leaderboard
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-center py-12">
-                          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                          <h3 className="text-lg font-semibold mb-2">Coming Soon</h3>
-                          <p className="text-muted-foreground">
-                            Interactive community features will be available soon. Connect with classmates, ask questions, and share resources.
-                          </p>
+                        <div className="space-y-4">
+                          {leaderboard.map((entry, index) => (
+                            <div key={entry.id} className="flex items-center justify-between p-4 rounded-lg bg-bg-primary/50">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center text-sm font-semibold">
+                                  {entry.avatar}
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold">{entry.name}</h4>
+                                  <p className="text-sm text-muted-foreground">Rank #{index + 1}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-brand-blue">{entry.score}%</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </CardContent>
                     </Card>

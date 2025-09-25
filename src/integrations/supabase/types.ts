@@ -14,7 +14,244 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      courses: {
+        Row: {
+          code: string
+          created_at: string
+          department: string
+          description: string
+          id: string
+          level: string
+          overview: string
+          semester: string
+          status: string
+          title: string
+          units: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          department: string
+          description: string
+          id?: string
+          level: string
+          overview: string
+          semester: string
+          status: string
+          title: string
+          units: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          department?: string
+          description?: string
+          id?: string
+          level?: string
+          overview?: string
+          semester?: string
+          status?: string
+          title?: string
+          units?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leaderboard: {
+        Row: {
+          avatar: string | null
+          course_id: string
+          created_at: string
+          id: string
+          name: string
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar?: string | null
+          course_id: string
+          created_at?: string
+          id?: string
+          name: string
+          score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar?: string | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          course_id: string
+          created_at: string
+          duration: string | null
+          id: string
+          link: string
+          pages: number | null
+          title: string
+          type: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          duration?: string | null
+          id?: string
+          link: string
+          pages?: number | null
+          title: string
+          type: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          duration?: string | null
+          id?: string
+          link?: string
+          pages?: number | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      past_questions: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          link: string
+          semester: string
+          year: number
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          link: string
+          semester: string
+          year: number
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          link?: string
+          semester?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "past_questions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_answer: number
+          course_id: string
+          created_at: string
+          explanation: string | null
+          id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          correct_answer: number
+          course_id: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options: Json
+          question: string
+        }
+        Update: {
+          correct_answer?: number
+          course_id?: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      textbooks: {
+        Row: {
+          author: string
+          course_id: string
+          created_at: string
+          download_link: string | null
+          id: string
+          title: string
+          year: number
+        }
+        Insert: {
+          author: string
+          course_id: string
+          created_at?: string
+          download_link?: string | null
+          id?: string
+          title: string
+          year: number
+        }
+        Update: {
+          author?: string
+          course_id?: string
+          created_at?: string
+          download_link?: string | null
+          id?: string
+          title?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "textbooks_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
