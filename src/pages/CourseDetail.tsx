@@ -20,6 +20,8 @@ import {
   Play
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
+import Leaderboard from "@/components/course/Leaderboard";
+import Community from "@/components/course/Community";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Course {
@@ -212,12 +214,13 @@ const CourseDetail = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <Tabs defaultValue="overview" className="space-y-8">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-7">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="textbooks">Textbooks</TabsTrigger>
                   <TabsTrigger value="materials">Materials</TabsTrigger>
                   <TabsTrigger value="questions">Past Questions</TabsTrigger>
                   <TabsTrigger value="quiz">Quiz</TabsTrigger>
+                  <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
                   <TabsTrigger value="community">Community</TabsTrigger>
                 </TabsList>
 
@@ -329,41 +332,12 @@ const CourseDetail = () => {
                   <QuizComponent courseId={course.id} courseTitle={course.title} />
                 </TabsContent>
 
+                <TabsContent value="leaderboard" className="space-y-6">
+                  <Leaderboard courseId={course.id} />
+                </TabsContent>
+
                 <TabsContent value="community" className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Trophy className="h-5 w-5" />
-                          Leaderboard
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {leaderboard.map((entry, index) => (
-                            <div key={entry.id} className="flex items-center justify-between p-4 rounded-lg bg-bg-primary/50">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center text-sm font-semibold">
-                                  {entry.avatar}
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold">{entry.name}</h4>
-                                  <p className="text-sm text-muted-foreground">Rank #{index + 1}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-brand-blue">{entry.score}%</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                  <Community courseId={course.id} courseTitle={course.title} />
                 </TabsContent>
               </Tabs>
             </div>

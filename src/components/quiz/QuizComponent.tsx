@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, XCircle, Trophy, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle, XCircle, Trophy, RotateCcw, Clock, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -26,6 +27,7 @@ interface QuizComponentProps {
 const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
   const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [answers, setAnswers] = useState<number[]>([]);
@@ -33,10 +35,32 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [quizSettings, setQuizSettings] = useState(false);
+  const [selectedQuestionCount, setSelectedQuestionCount] = useState("10");
+  const [selectedTimeLimit, setSelectedTimeLimit] = useState("15");
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false);
 
   useEffect(() => {
     fetchQuizQuestions();
   }, [courseId]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timerActive && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timeRemaining]);
 
   const fetchQuizQuestions = async () => {
     try {
@@ -56,13 +80,55 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
           ...q,
           options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as string)
         }));
-        setQuestions(formattedQuestions);
+        setAllQuestions(formattedQuestions);
       }
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const startQuiz = () => {
+    const questionCount = parseInt(selectedQuestionCount);
+    const timeLimitMinutes = parseInt(selectedTimeLimit);
+    
+    // Shuffle and select questions
+    const shuffledQuestions = [...allQuestions].sort(() => 0.5 - Math.random());
+    const selectedQuestions = shuffledQuestions.slice(0, Math.min(questionCount, allQuestions.length));
+    
+    setQuestions(selectedQuestions);
+    setTimeRemaining(timeLimitMinutes * 60); // Convert to seconds
+    setTimerActive(true);
+    setQuizStarted(true);
+    setQuizSettings(false);
+  };
+
+  const handleTimeUp = async () => {
+    setTimerActive(false);
+    // Auto-submit with current answers
+    const correctCount = answers.reduce((count, answer, index) => {
+      return count + (answer === questions[index]?.correct_answer ? 1 : 0);
+    }, 0);
+    const finalScore = Math.round((correctCount / questions.length) * 100);
+    setScore(correctCount);
+    setQuizCompleted(true);
+    await updateLeaderboard(finalScore);
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const getQuestionCountOptions = () => {
+    const options = [];
+    const maxQuestions = Math.min(allQuestions.length, 100);
+    for (let i = 5; i <= maxQuestions; i += 5) {
+      options.push(i.toString());
+    }
+    return options;
   };
 
   const updateLeaderboard = async (finalScore: number) => {
@@ -100,7 +166,7 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
     );
   }
 
-  if (questions.length === 0) {
+  if (allQuestions.length === 0) {
     return (
       <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
         <CardContent className="p-8 text-center">
@@ -111,6 +177,80 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
           </p>
         </CardContent>
       </Card>
+    );
+  }
+
+  if (!quizStarted) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Quiz Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="question-count">Number of Questions</Label>
+                <Select value={selectedQuestionCount} onValueChange={setSelectedQuestionCount}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select question count" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getQuestionCountOptions().map((count) => (
+                      <SelectItem key={count} value={count}>
+                        {count} Questions
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="time-limit">Time Limit</Label>
+                <Select value={selectedTimeLimit} onValueChange={setSelectedTimeLimit}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select time limit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 Minute</SelectItem>
+                    <SelectItem value="2">2 Minutes</SelectItem>
+                    <SelectItem value="5">5 Minutes</SelectItem>
+                    <SelectItem value="10">10 Minutes</SelectItem>
+                    <SelectItem value="15">15 Minutes</SelectItem>
+                    <SelectItem value="20">20 Minutes</SelectItem>
+                    <SelectItem value="30">30 Minutes</SelectItem>
+                    <SelectItem value="45">45 Minutes</SelectItem>
+                    <SelectItem value="60">1 Hour</SelectItem>
+                    <SelectItem value="90">1.5 Hours</SelectItem>
+                    <SelectItem value="120">2 Hours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-white/10">
+              <div className="text-center space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  <p>Available Questions: {allQuestions.length}</p>
+                  <p>Selected: {selectedQuestionCount} questions in {selectedTimeLimit} minute{parseInt(selectedTimeLimit) > 1 ? 's' : ''}</p>
+                </div>
+                <Button onClick={startQuiz} variant="gradient" size="lg">
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Start Quiz
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -149,6 +289,9 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
     setShowResult(false);
     setQuizCompleted(false);
     setScore(0);
+    setQuizStarted(false);
+    setTimerActive(false);
+    setTimeRemaining(0);
   };
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
@@ -290,9 +433,15 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Question {currentQuestion + 1} of {questions.length}</CardTitle>
-            <Badge variant="outline">
-              {courseTitle}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className={timeRemaining <= 60 ? "text-red-500 border-red-500" : ""}>
+                <Clock className="h-3 w-3 mr-1" />
+                {formatTime(timeRemaining)}
+              </Badge>
+              <Badge variant="outline">
+                {courseTitle}
+              </Badge>
+            </div>
           </div>
           <Progress value={progress} className="w-full" />
         </CardHeader>
