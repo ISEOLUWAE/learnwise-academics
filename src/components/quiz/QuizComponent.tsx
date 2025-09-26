@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, XCircle, Trophy, RotateCcw, Clock, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import AntiCheatWrapper from "./AntiCheatWrapper";
+import MathRenderer from "./MathRenderer";
+import CodeRenderer from "./CodeRenderer";
 
 interface Question {
   id: string;

@@ -123,9 +123,9 @@ const Courses = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex gap-4">
+                    <div className="space-y-4 md:space-y-0 md:flex md:gap-4">
                       <div className="flex-1">
-                        <Label htmlFor="search">Course Title or Code</Label>
+                        <Label htmlFor="search" className="text-sm font-medium mb-2 block">Course Title or Code</Label>
                         <Input
                           id="search"
                           placeholder="e.g., Mathematics, MTH 101"
@@ -134,31 +134,33 @@ const Courses = () => {
                           className="bg-bg-primary/50"
                         />
                       </div>
-                      <div className="w-32">
-                        <Label>Level</Label>
-                        <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                          <SelectTrigger className="bg-bg-primary/50">
-                            <SelectValue placeholder="Level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="100">100 Level</SelectItem>
-                            <SelectItem value="200">200 Level</SelectItem>
-                            <SelectItem value="300">300 Level</SelectItem>
-                            <SelectItem value="400">400 Level</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="w-32">
-                        <Label>Semester</Label>
-                        <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                          <SelectTrigger className="bg-bg-primary/50">
-                            <SelectValue placeholder="Semester" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="First">First</SelectItem>
-                            <SelectItem value="Second">Second</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="flex gap-4 md:w-auto">
+                        <div className="flex-1 md:w-32">
+                          <Label className="text-sm font-medium mb-2 block">Level</Label>
+                          <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+                            <SelectTrigger className="bg-bg-primary/50">
+                              <SelectValue placeholder="Level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="100">100 Level</SelectItem>
+                              <SelectItem value="200">200 Level</SelectItem>
+                              <SelectItem value="300">300 Level</SelectItem>
+                              <SelectItem value="400">400 Level</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex-1 md:w-32">
+                          <Label className="text-sm font-medium mb-2 block">Semester</Label>
+                          <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+                            <SelectTrigger className="bg-bg-primary/50">
+                              <SelectValue placeholder="Semester" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="First">First</SelectItem>
+                              <SelectItem value="Second">Second</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                     <Button onClick={handleSearch} className="w-full" variant="gradient">
