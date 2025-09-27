@@ -233,6 +233,7 @@ const Courses = () => {
                 >
                   <Card className="card-hover bg-bg-secondary/50 backdrop-blur border-white/10 h-full">
                     <CardHeader>
+                      <CardTitle className="text-lg mb-3">{course.title}</CardTitle>
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant="outline" className="text-brand-blue border-brand-blue">
                           {course.code}
@@ -241,7 +242,10 @@ const Courses = () => {
                           {course.status}
                         </Badge>
                       </div>
-                      <CardTitle className="text-lg">{course.title}</CardTitle>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                        <span>Level {course.level}</span>
+                        <span>{course.semester} Semester</span>
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-muted-foreground text-sm">
@@ -257,11 +261,6 @@ const Courses = () => {
                           <Users className="h-4 w-4 text-brand-green" />
                           <span>{course.students}</span>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>Level {course.level}</span>
-                        <span>{course.semester} Semester</span>
                       </div>
                       
                       <Link to={`/course/${course.id}`}>

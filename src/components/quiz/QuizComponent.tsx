@@ -55,7 +55,7 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
-            handleTimeUp();
+            handleSubmit();
             return 0;
           }
           return prev - 1;
@@ -78,13 +78,16 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
         return;
       }
 
-      if (data) {
-        const formattedQuestions = data.map(q => ({
-          ...q,
-          options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as string)
-        }));
-        setAllQuestions(formattedQuestions);
-      }
+      // Transform the data to match our Question interface
+      const transformedQuestions: Question[] = (data || []).map(q => ({
+        id: q.id,
+        question: q.question,
+        options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as string),
+        correct_answer: q.correct_answer,
+        explanation: q.explanation || undefined
+      }));
+
+      setAllQuestions(transformedQuestions);
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
     } finally {
@@ -93,400 +96,372 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
   };
 
   const startQuiz = () => {
-    const questionCount = parseInt(selectedQuestionCount);
-    const timeLimitMinutes = parseInt(selectedTimeLimit);
-    
-    // Shuffle and select questions
-    const shuffledQuestions = [...allQuestions].sort(() => 0.5 - Math.random());
-    const selectedQuestions = shuffledQuestions.slice(0, Math.min(questionCount, allQuestions.length));
-    
-    setQuestions(selectedQuestions);
-    setTimeRemaining(timeLimitMinutes * 60); // Convert to seconds
-    setTimerActive(true);
+    if (allQuestions.length === 0) return;
+
+    const questionCount = Math.min(parseInt(selectedQuestionCount), allQuestions.length);
+    const shuffledQuestions = [...allQuestions]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, questionCount);
+
+    setQuestions(shuffledQuestions);
+    setAnswers(new Array(questionCount).fill(-1));
+    setCurrentQuestion(0);
+    setSelectedAnswer("");
     setQuizStarted(true);
-    setQuizSettings(false);
+    setQuizCompleted(false);
+    setShowResult(false);
+    setScore(0);
+    
+    // Start timer
+    const timeLimitMinutes = parseInt(selectedTimeLimit);
+    setTimeRemaining(timeLimitMinutes * 60);
+    setTimerActive(true);
   };
 
-  const handleTimeUp = async () => {
-    setTimerActive(false);
-    // Auto-submit with current answers
-    const correctCount = answers.reduce((count, answer, index) => {
-      return count + (answer === questions[index]?.correct_answer ? 1 : 0);
-    }, 0);
-    const finalScore = Math.round((correctCount / questions.length) * 100);
-    setScore(correctCount);
-    setQuizCompleted(true);
-    await updateLeaderboard(finalScore);
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const getQuestionCountOptions = () => {
-    const options = [];
-    const maxQuestions = Math.min(allQuestions.length, 100);
-    for (let i = 5; i <= maxQuestions; i += 5) {
-      options.push(i.toString());
-    }
-    return options;
-  };
-
-  const updateLeaderboard = async (finalScore: number) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('leaderboard')
-        .upsert({
-          course_id: courseId,
-          user_id: user.id,
-          name: user.email?.split('@')[0] || 'Anonymous',
-          score: finalScore,
-          avatar: user.email?.charAt(0).toUpperCase() || 'A'
-        }, {
-          onConflict: 'course_id,user_id'
-        });
-
-      if (error) {
-        console.error('Error updating leaderboard:', error);
+  const handleNext = () => {
+    if (selectedAnswer !== "") {
+      const newAnswers = [...answers];
+      newAnswers[currentQuestion] = parseInt(selectedAnswer);
+      setAnswers(newAnswers);
+      
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(answers[currentQuestion + 1]?.toString() || "");
       }
-    } catch (error) {
-      console.error('Error updating leaderboard:', error);
     }
   };
 
-  if (loading) {
-    return (
-      <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading quiz questions...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (allQuestions.length === 0) {
-    return (
-      <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-        <CardContent className="p-8 text-center">
-          <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">Quiz Coming Soon</h3>
-          <p className="text-muted-foreground">
-            Quiz questions for this course are being prepared. Check back soon!
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!quizStarted) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-6"
-      >
-        <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Quiz Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label htmlFor="question-count">Number of Questions</Label>
-                <Select value={selectedQuestionCount} onValueChange={setSelectedQuestionCount}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select question count" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getQuestionCountOptions().map((count) => (
-                      <SelectItem key={count} value={count}>
-                        {count} Questions
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-3">
-                <Label htmlFor="time-limit">Time Limit</Label>
-                <Select value={selectedTimeLimit} onValueChange={setSelectedTimeLimit}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select time limit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 Minute</SelectItem>
-                    <SelectItem value="2">2 Minutes</SelectItem>
-                    <SelectItem value="5">5 Minutes</SelectItem>
-                    <SelectItem value="10">10 Minutes</SelectItem>
-                    <SelectItem value="15">15 Minutes</SelectItem>
-                    <SelectItem value="20">20 Minutes</SelectItem>
-                    <SelectItem value="30">30 Minutes</SelectItem>
-                    <SelectItem value="45">45 Minutes</SelectItem>
-                    <SelectItem value="60">1 Hour</SelectItem>
-                    <SelectItem value="90">1.5 Hours</SelectItem>
-                    <SelectItem value="120">2 Hours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-white/10">
-              <div className="text-center space-y-4">
-                <div className="text-sm text-muted-foreground">
-                  <p>Available Questions: {allQuestions.length}</p>
-                  <p>Selected: {selectedQuestionCount} questions in {selectedTimeLimit} minute{parseInt(selectedTimeLimit) > 1 ? 's' : ''}</p>
-                </div>
-                <Button onClick={startQuiz} variant="gradient" size="lg">
-                  <Trophy className="h-4 w-4 mr-2" />
-                  Start Quiz
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  }
-
-  const handleAnswerSelect = (value: string) => {
-    setSelectedAnswer(value);
-  };
-
-  const handleNext = async () => {
-    const answerIndex = parseInt(selectedAnswer);
-    const newAnswers = [...answers, answerIndex];
-    setAnswers(newAnswers);
-
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer("");
-    } else {
-      // Quiz completed
-      const correctCount = newAnswers.reduce((count, answer, index) => {
-        return count + (answer === questions[index].correct_answer ? 1 : 0);
-      }, 0);
-      const finalScore = Math.round((correctCount / questions.length) * 100);
-      setScore(correctCount);
-      setQuizCompleted(true);
-      await updateLeaderboard(finalScore);
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+      setSelectedAnswer(answers[currentQuestion - 1]?.toString() || "");
     }
   };
 
-  const handleShowResult = () => {
-    setShowResult(true);
+  const handleSubmit = async () => {
+    setTimerActive(false);
+    
+    // Save current answer
+    const finalAnswers = [...answers];
+    if (selectedAnswer !== "") {
+      finalAnswers[currentQuestion] = parseInt(selectedAnswer);
+    }
+    
+    // Calculate score
+    let correctCount = 0;
+    questions.forEach((question, index) => {
+      if (finalAnswers[index] === question.correct_answer) {
+        correctCount++;
+      }
+    });
+    
+    const finalScore = Math.round((correctCount / questions.length) * 100);
+    setScore(finalScore);
+    setAnswers(finalAnswers);
+    setQuizCompleted(true);
+
+    // Save to leaderboard if user is authenticated
+    if (user && finalScore > 0) {
+      try {
+        const { error } = await supabase
+          .from('leaderboard')
+          .upsert({
+            course_id: courseId,
+            user_id: user.id,
+            name: user.email?.split('@')[0] || 'Anonymous',
+            score: finalScore,
+            avatar: user.email?.charAt(0).toUpperCase() || 'A'
+          }, {
+            onConflict: 'course_id,user_id'
+          });
+
+        if (error) {
+          console.error('Error saving score:', error);
+        }
+      } catch (error) {
+        console.error('Error saving to leaderboard:', error);
+      }
+    }
   };
 
-  const handleRestart = () => {
+  const resetQuiz = () => {
+    setQuizStarted(false);
+    setQuizCompleted(false);
+    setShowResult(false);
     setCurrentQuestion(0);
     setSelectedAnswer("");
     setAnswers([]);
-    setShowResult(false);
-    setQuizCompleted(false);
     setScore(0);
-    setQuizStarted(false);
     setTimerActive(false);
     setTimeRemaining(0);
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-  const currentQ = questions[currentQuestion];
+  const renderQuestionContent = (question: Question, isResult: boolean = false) => {
+    const isMathCourse = courseTitle.toLowerCase().includes('math') || courseTitle.toLowerCase().includes('physics');
+    const isCodeCourse = courseTitle.toLowerCase().includes('computer') || courseTitle.toLowerCase().includes('programming');
 
-  if (quizCompleted && !showResult) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="bg-gradient-primary text-white">
-          <CardContent className="p-8 text-center">
-            <Trophy className="h-16 w-16 mx-auto mb-4 text-yellow-400" />
-            <h2 className="text-2xl font-bold mb-4">Quiz Completed!</h2>
-            <p className="text-lg mb-2">Your Score:</p>
-            <p className="text-4xl font-bold mb-6">
-              {score}/{questions.length} ({Math.round((score / questions.length) * 100)}%)
-            </p>
-            <div className="space-y-3">
-              <Button variant="glass" onClick={handleShowResult} className="w-full">
-                View Detailed Results
-              </Button>
-              <Button variant="outline" onClick={handleRestart} className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Retake Quiz
-              </Button>
+      <div className="space-y-4">
+        <div className="text-lg font-medium">
+          {isMathCourse ? (
+            <MathRenderer>{question.question}</MathRenderer>
+          ) : isCodeCourse ? (
+            <CodeRenderer>{question.question}</CodeRenderer>
+          ) : (
+            question.question
+          )}
+        </div>
+        
+        <RadioGroup 
+          value={isResult ? question.correct_answer.toString() : selectedAnswer} 
+          onValueChange={!isResult ? setSelectedAnswer : undefined}
+          disabled={isResult}
+          className="space-y-3"
+        >
+          {question.options.map((option, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <RadioGroupItem 
+                value={index.toString()} 
+                id={`option-${index}`}
+                className={isResult && index === question.correct_answer ? "border-green-500" : ""}
+              />
+              <Label 
+                htmlFor={`option-${index}`} 
+                className={`flex-1 cursor-pointer p-3 rounded-lg border transition-colors ${
+                  isResult 
+                    ? index === question.correct_answer 
+                      ? "bg-green-500/20 border-green-500" 
+                      : "bg-bg-secondary/30"
+                    : "bg-bg-secondary/30 hover:bg-bg-secondary/50"
+                }`}
+              >
+                {isMathCourse ? (
+                  <MathRenderer>{option}</MathRenderer>
+                ) : isCodeCourse ? (
+                  <CodeRenderer>{option}</CodeRenderer>
+                ) : (
+                  option
+                )}
+              </Label>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          ))}
+        </RadioGroup>
+        
+        {isResult && question.explanation && (
+          <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+            <h4 className="font-semibold text-blue-400 mb-2">Explanation:</h4>
+            <div className="text-sm text-muted-foreground">
+              {isMathCourse ? (
+                <MathRenderer>{question.explanation}</MathRenderer>
+              ) : isCodeCourse ? (
+                <CodeRenderer>{question.explanation}</CodeRenderer>
+              ) : (
+                question.explanation
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     );
-  }
+  };
 
-  if (showResult) {
-    return (
+  return (
+    <AntiCheatWrapper 
+      isActive={quizStarted && !quizCompleted}
+      onCheatDetected={() => {
+        console.log("Cheat attempt detected during quiz");
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-4"
+        transition={{ duration: 0.6 }}
       >
-        <Card className="bg-gradient-primary text-white">
+        <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Quiz Results - {courseTitle}
+            <CardTitle className="flex items-center justify-between">
+              <span>📝 {courseTitle} Quiz</span>
+              {timerActive && timeRemaining > 0 && (
+                <div className="flex items-center gap-2 text-red-400">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-mono">
+                    {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg">
-              Final Score: {score}/{questions.length} ({Math.round((score / questions.length) * 100)}%)
-            </p>
-          </CardContent>
-        </Card>
-
-        {questions.map((question, index) => {
-          const userAnswer = answers[index];
-          const isCorrect = userAnswer === question.correct_answer;
-          
-          return (
-            <Card key={question.id} className="bg-bg-secondary/50 backdrop-blur border-white/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  {isCorrect ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  )}
-                  Question {index + 1}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="font-medium">{question.question}</p>
-                
-                <div className="space-y-2">
-                  {question.options.map((option, optionIndex) => {
-                    let bgColor = "";
-                    if (optionIndex === question.correct_answer) {
-                      bgColor = "bg-green-500/20 border-green-500";
-                    } else if (optionIndex === userAnswer && !isCorrect) {
-                      bgColor = "bg-red-500/20 border-red-500";
-                    }
-                    
-                    return (
-                      <div
-                        key={optionIndex}
-                        className={`p-3 rounded-lg border ${bgColor || "border-white/10"}`}
-                      >
-                        {option}
-                        {optionIndex === question.correct_answer && (
-                          <Badge variant="outline" className="ml-2 text-green-500 border-green-500">
-                            Correct
-                          </Badge>
-                        )}
-                        {optionIndex === userAnswer && !isCorrect && (
-                          <Badge variant="outline" className="ml-2 text-red-500 border-red-500">
-                            Your Answer
-                          </Badge>
-                        )}
-                      </div>
-                    );
-                  })}
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading quiz questions...</p>
+              </div>
+            ) : !quizStarted ? (
+              <div className="space-y-6">
+                <div className="text-center space-y-4">
+                  <h3 className="text-xl font-semibold">Quiz Settings</h3>
+                  <p className="text-muted-foreground">
+                    Configure your quiz before starting. Choose the number of questions and time limit.
+                  </p>
                 </div>
                 
-                {question.explanation && (
-                  <div className="p-3 rounded-lg bg-blue-500/20 border border-blue-500/30">
-                    <p className="text-sm">
-                      <strong>Explanation:</strong> {question.explanation}
-                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="question-count">Number of Questions</Label>
+                    <Select value={selectedQuestionCount} onValueChange={setSelectedQuestionCount}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select questions" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 20 }, (_, i) => (i + 1) * 5).map(count => (
+                          <SelectItem key={count} value={count.toString()}>
+                            {count} questions
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="time-limit">Time Limit</Label>
+                    <Select value={selectedTimeLimit} onValueChange={setSelectedTimeLimit}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 5, 10, 15, 20, 30, 45, 60, 90, 120].map(minutes => (
+                          <SelectItem key={minutes} value={minutes.toString()}>
+                            {minutes} {minutes === 1 ? 'minute' : 'minutes'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <Button 
+                    onClick={startQuiz} 
+                    size="lg" 
+                    className="px-8"
+                    disabled={allQuestions.length === 0}
+                  >
+                    Start Quiz
+                  </Button>
+                </div>
+                
+                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
+                  <h4 className="font-semibold text-yellow-400 mb-2">Anti-Cheat Notice:</h4>
+                  <ul className="text-sm text-yellow-300 space-y-1">
+                    <li>• Right-clicking is disabled during the quiz</li>
+                    <li>• Copy/paste functions are blocked</li>
+                    <li>• Tab switching is monitored</li>
+                    <li>• Screenshot attempts are detected</li>
+                  </ul>
+                </div>
+              </div>
+            ) : quizCompleted ? (
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", duration: 0.6 }}
+                  className="text-center"
+                >
+                  <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-2">Quiz Completed!</h3>
+                  <div className="text-4xl font-bold text-brand-blue mb-2">{score}%</div>
+                  <p className="text-muted-foreground">
+                    You scored {score}% ({Math.round((score / 100) * questions.length)} out of {questions.length} questions correct)
+                  </p>
+                </motion.div>
+
+                <div className="flex gap-4 justify-center">
+                  <Button onClick={resetQuiz} variant="outline">
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Retake Quiz
+                  </Button>
+                  <Button onClick={() => setShowResult(true)} variant="default">
+                    View Explanations
+                  </Button>
+                </div>
+
+                {showResult && (
+                  <div className="space-y-6 mt-6">
+                    <h4 className="text-xl font-semibold">Quiz Review & Explanations</h4>
+                    {questions.map((question, index) => (
+                      <Card key={question.id} className="bg-bg-primary/30">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">Question {index + 1}</span>
+                            <div className="flex items-center gap-2">
+                              {answers[index] === question.correct_answer ? (
+                                <CheckCircle className="h-5 w-5 text-green-500" />
+                              ) : (
+                                <XCircle className="h-5 w-5 text-red-500" />
+                              )}
+                              <span className="text-sm text-muted-foreground">
+                                {answers[index] === question.correct_answer ? "Correct" : "Incorrect"}
+                              </span>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          {renderQuestionContent(question, true)}
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          );
-        })}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">
+                    Question {currentQuestion + 1} of {questions.length}
+                  </Badge>
+                  <div className="text-sm text-muted-foreground">
+                    {Math.round(((currentQuestion + 1) / questions.length) * 100)}% Complete
+                  </div>
+                </div>
 
-        <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-          <CardContent className="p-6 text-center">
-            <Button onClick={handleRestart} variant="gradient" className="w-full">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Take Quiz Again
-            </Button>
+                <Progress value={((currentQuestion + 1) / questions.length) * 100} />
+
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentQuestion}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderQuestionContent(questions[currentQuestion])}
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="flex justify-between">
+                  <Button
+                    onClick={handlePrevious}
+                    disabled={currentQuestion === 0}
+                    variant="outline"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={currentQuestion === questions.length - 1 ? handleSubmit : handleNext}
+                    disabled={!selectedAnswer}
+                    variant={currentQuestion === questions.length - 1 ? "destructive" : "default"}
+                  >
+                    {currentQuestion === questions.length - 1 ? "Submit Quiz" : "Next"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
-    );
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Question {currentQuestion + 1} of {questions.length}</CardTitle>
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className={timeRemaining <= 60 ? "text-red-500 border-red-500" : ""}>
-                <Clock className="h-3 w-3 mr-1" />
-                {formatTime(timeRemaining)}
-              </Badge>
-              <Badge variant="outline">
-                {courseTitle}
-              </Badge>
-            </div>
-          </div>
-          <Progress value={progress} className="w-full" />
-        </CardHeader>
-      </Card>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentQuestion}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-            <CardHeader>
-              <CardTitle>{currentQ.question}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <RadioGroup value={selectedAnswer} onValueChange={handleAnswerSelect}>
-                {currentQ.options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-2 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                    <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                    <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                      {option}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-
-              <Button 
-                onClick={handleNext} 
-                disabled={!selectedAnswer} 
-                className="w-full"
-                variant="gradient"
-              >
-                {currentQuestion < questions.length - 1 ? "Next Question" : "Finish Quiz"}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+    </AntiCheatWrapper>
   );
 };
 
