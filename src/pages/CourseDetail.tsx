@@ -214,14 +214,14 @@ const CourseDetail = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <Tabs defaultValue="overview" className="space-y-8">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-7">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="textbooks">Textbooks</TabsTrigger>
-                  <TabsTrigger value="materials">Materials</TabsTrigger>
-                  <TabsTrigger value="questions">Past Questions</TabsTrigger>
-                  <TabsTrigger value="quiz">Quiz</TabsTrigger>
-                  <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-                  <TabsTrigger value="community">Community</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 gap-1">
+                  <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1">Overview</TabsTrigger>
+                  <TabsTrigger value="textbooks" className="text-xs sm:text-sm px-2 py-1">Textbooks</TabsTrigger>
+                  <TabsTrigger value="materials" className="text-xs sm:text-sm px-2 py-1">Materials</TabsTrigger>
+                  <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 py-1">Past Q's</TabsTrigger>
+                  <TabsTrigger value="quiz" className="text-xs sm:text-sm px-2 py-1">Quiz</TabsTrigger>
+                  <TabsTrigger value="leaderboard" className="text-xs sm:text-sm px-2 py-1">Board</TabsTrigger>
+                  <TabsTrigger value="community" className="text-xs sm:text-sm px-2 py-1">Community</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">

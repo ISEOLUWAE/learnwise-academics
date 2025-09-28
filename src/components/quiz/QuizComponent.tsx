@@ -65,6 +65,41 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining]);
 
+  // Enhanced tab switching detection
+  useEffect(() => {
+    if (quizStarted && !quizCompleted) {
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          console.log("Tab switch detected - auto submitting quiz");
+          handleSubmit();
+        }
+      };
+
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = '';
+        handleSubmit();
+      };
+
+      const handleBlur = () => {
+        if (quizStarted && !quizCompleted) {
+          console.log("Window focus lost - auto submitting quiz");
+          handleSubmit();
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      window.addEventListener('blur', handleBlur);
+
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener('blur', handleBlur);
+      };
+    }
+  }, [quizStarted, quizCompleted]);
+
   const fetchQuizQuestions = async () => {
     try {
       setLoading(true);
@@ -218,33 +253,40 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
           disabled={isResult}
           className="space-y-3"
         >
-          {question.options.map((option, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <RadioGroupItem 
-                value={index.toString()} 
-                id={`option-${index}`}
-                className={isResult && index === question.correct_answer ? "border-green-500" : ""}
-              />
-              <Label 
-                htmlFor={`option-${index}`} 
-                className={`flex-1 cursor-pointer p-3 rounded-lg border transition-colors ${
-                  isResult 
-                    ? index === question.correct_answer 
-                      ? "bg-green-500/20 border-green-500" 
-                      : "bg-bg-secondary/30"
-                    : "bg-bg-secondary/30 hover:bg-bg-secondary/50"
-                }`}
-              >
-                {isMathCourse ? (
-                  <MathRenderer>{option}</MathRenderer>
-                ) : isCodeCourse ? (
-                  <CodeRenderer>{option}</CodeRenderer>
-                ) : (
-                  option
-                )}
-              </Label>
-            </div>
-          ))}
+          {question.options.map((option, index) => {
+            const isCorrectAnswer = isResult && index === question.correct_answer;
+            const isUserWrongAnswer = isResult && answers[currentQuestion] === index && index !== question.correct_answer;
+            
+            return (
+              <div key={index} className="flex items-center space-x-2">
+                <RadioGroupItem 
+                  value={index.toString()} 
+                  id={`option-${index}`}
+                  className={isCorrectAnswer ? "border-green-500" : isUserWrongAnswer ? "border-red-500" : ""}
+                />
+                <Label 
+                  htmlFor={`option-${index}`} 
+                  className={`flex-1 cursor-pointer p-3 rounded-lg border transition-colors ${
+                    isResult 
+                      ? isCorrectAnswer 
+                        ? "bg-green-500/20 border-green-500 text-green-300" 
+                        : isUserWrongAnswer
+                        ? "bg-red-500/20 border-red-500 text-red-300"
+                        : "bg-bg-secondary/30"
+                      : "bg-bg-secondary/30 hover:bg-bg-secondary/50"
+                  }`}
+                >
+                  {isMathCourse ? (
+                    <MathRenderer>{option}</MathRenderer>
+                  ) : isCodeCourse ? (
+                    <CodeRenderer>{option}</CodeRenderer>
+                  ) : (
+                    option
+                  )}
+                </Label>
+              </div>
+            );
+          })}
         </RadioGroup>
         
         {isResult && question.explanation && (
