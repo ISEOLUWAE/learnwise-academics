@@ -23,25 +23,61 @@ const AntiCheatWrapper = ({ children, isActive, onCheatDetected }: AntiCheatWrap
       return false;
     };
 
-    // Disable copy/paste keyboard shortcuts
+    // Enhanced keyboard shortcut blocking
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Disable Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+S, F12, etc.
-      if (
-        (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'a' || e.key === 's')) ||
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-        (e.ctrlKey && e.key === 'u')
-      ) {
+      // Block function keys and special keys
+      const blockedKeys = [
+        'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+        'PrintScreen'
+      ];
+
+      // Block dangerous combinations
+      const blockedCombinations = [
+        { key: 'c', ctrlKey: true }, // Copy
+        { key: 'v', ctrlKey: true }, // Paste
+        { key: 'a', ctrlKey: true }, // Select all
+        { key: 's', ctrlKey: true }, // Save
+        { key: 'u', ctrlKey: true }, // View source
+        { key: 'r', ctrlKey: true }, // Refresh
+        { key: 'f', ctrlKey: true }, // Find
+        { key: 'i', ctrlKey: true, shiftKey: true }, // Dev tools
+        { key: 'j', ctrlKey: true, shiftKey: true }, // Console
+        { key: 'c', ctrlKey: true, shiftKey: true }, // Inspector
+        { key: 'Tab', altKey: true }, // Alt+Tab
+      ];
+
+      // Check blocked keys
+      if (blockedKeys.includes(e.key)) {
         e.preventDefault();
-        addCheatAttempt(`Keyboard shortcut blocked: ${e.key}`);
+        addCheatAttempt(`Function key blocked: ${e.key}`);
+        return false;
+      }
+
+      // Check blocked combinations
+      const isBlocked = blockedCombinations.some(combo => 
+        e.key.toLowerCase() === combo.key.toLowerCase() &&
+        !!e.ctrlKey === !!combo.ctrlKey &&
+        !!e.shiftKey === !!combo.shiftKey &&
+        !!e.altKey === !!combo.altKey
+      );
+
+      if (isBlocked) {
+        e.preventDefault();
+        addCheatAttempt(`Keyboard shortcut blocked: ${e.ctrlKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.altKey ? 'Alt+' : ''}${e.key}`);
         return false;
       }
     };
 
-    // Detect print screen
+    // Enhanced screenshot detection
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'PrintScreen') {
         addCheatAttempt("Screenshot attempt detected");
+        // Try to clear clipboard
+        try {
+          navigator.clipboard.writeText("Screenshot blocked during quiz");
+        } catch (err) {
+          console.log("Could not access clipboard");
+        }
       }
     };
 
@@ -79,8 +115,9 @@ const AntiCheatWrapper = ({ children, isActive, onCheatDetected }: AntiCheatWrap
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('dragstart', handleDragStart);
 
-    // Add CSS to disable text selection
+    // Enhanced CSS to prevent text selection and screenshots
     const style = document.createElement('style');
+    style.id = 'anti-cheat-styles';
     style.textContent = `
       .anti-cheat-active {
         -webkit-user-select: none !important;
@@ -89,12 +126,26 @@ const AntiCheatWrapper = ({ children, isActive, onCheatDetected }: AntiCheatWrap
         user-select: none !important;
         -webkit-touch-callout: none !important;
         -webkit-tap-highlight-color: transparent !important;
+        pointer-events: auto !important;
       }
       .anti-cheat-active * {
         -webkit-user-select: none !important;
         -moz-user-select: none !important;
         -ms-user-select: none !important;
         user-select: none !important;
+        -webkit-touch-callout: none !important;
+      }
+      /* Prevent screenshot overlay */
+      .anti-cheat-active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+        z-index: -1;
+        pointer-events: none;
       }
     `;
     document.head.appendChild(style);
@@ -111,7 +162,12 @@ const AntiCheatWrapper = ({ children, isActive, onCheatDetected }: AntiCheatWrap
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('dragstart', handleDragStart);
       document.body.classList.remove('anti-cheat-active');
-      document.head.removeChild(style);
+      
+      // Remove style element safely
+      const styleElement = document.getElementById('anti-cheat-styles');
+      if (styleElement && styleElement.parentNode) {
+        styleElement.parentNode.removeChild(styleElement);
+      }
     };
   }, [isActive, onCheatDetected]);
 
