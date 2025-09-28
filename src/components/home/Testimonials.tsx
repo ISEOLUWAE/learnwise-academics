@@ -11,7 +11,7 @@ const testimonials = [
     university: "University of Lagos",
     avatar: "AJ",
     rating: 5,
-    testimonial: "SmartLearn's GPA calculator helped me track my academic progress effectively. The course materials are comprehensive and the quiz section really prepared me for exams. I improved my CGPA from 3.2 to 4.1!"
+    testimonial: "AcadBridge's GPA calculator helped me track my academic progress effectively. The course materials are comprehensive and the quiz section really prepared me for exams. I improved my CGPA from 3.2 to 4.1!"
   },
   {
     id: 2,
@@ -29,7 +29,7 @@ const testimonials = [
     university: "University of Nigeria, Nsukka",
     avatar: "EO",
     rating: 5,
-    testimonial: "I love the programming courses and web development materials. The community section allowed me to connect with other students and learn collaboratively. SmartLearn made my IT journey much smoother!"
+    testimonial: "I love the programming courses and web development materials. The community section allowed me to connect with other students and learn collaboratively. AcadBridge made my IT journey much smoother!"
   },
   {
     id: 4,
@@ -38,7 +38,7 @@ const testimonials = [
     university: "University of Abuja",
     avatar: "AI",
     rating: 5,
-    testimonial: "The scholarship updates and university news keep me informed about opportunities. I've applied to several scholarships I found through SmartLearn. The platform is a game-changer for Nigerian students!"
+    testimonial: "The scholarship updates and university news keep me informed about opportunities. I've applied to several scholarships I found through AcadBridge. The platform is a game-changer for Nigerian students!"
   },
   {
     id: 5,
@@ -56,7 +56,7 @@ const testimonials = [
     university: "University of Ibadan",
     avatar: "GA",
     rating: 5,
-    testimonial: "SmartLearn's chemistry and biology courses complement my pharmacy studies perfectly. The interactive quizzes and detailed explanations have significantly improved my understanding of complex topics."
+    testimonial: "AcadBridge's chemistry and biology courses complement my pharmacy studies perfectly. The interactive quizzes and detailed explanations have significantly improved my understanding of complex topics."
   }
 ];
 
@@ -74,7 +74,7 @@ const Testimonials = () => {
             Student <span className="hero-text">Testimonials</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Hear from our successful students who have transformed their academic journey with SmartLearn
+            Hear from our successful students who have transformed their academic journey with AcadBridge
           </p>
         </motion.div>
 

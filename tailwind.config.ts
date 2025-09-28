@@ -57,7 +57,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // SmartLearn Brand Colors
+        // AcadBridge Brand Colors
         brand: {
           blue: "hsl(var(--brand-blue))",
           green: "hsl(var(--brand-green))",

@@ -40,7 +40,7 @@ const Contact = () => {
     {
       icon: <Mail className="h-6 w-6" />,
       title: "Email",
-      content: "info@smartlearn.edu",
+      content: "info@AcadBridge.edu",
       description: "Send us an email anytime"
     },
     {
@@ -78,7 +78,7 @@ const Contact = () => {
     },
     {
       question: "How can I get help with technical issues?",
-      answer: "Contact our support team using this form or email us directly at support@smartlearn.edu"
+      answer: "Contact our support team using this form or email us directly at support@AcadBridge.edu"
     }
   ];
 
@@ -256,7 +256,7 @@ const Contact = () => {
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
                 <p className="text-muted-foreground">
-                  Quick answers to common questions about SmartLearn
+                  Quick answers to common questions about AcadBridge
                 </p>
               </div>
 

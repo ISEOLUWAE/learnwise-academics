@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     question: "Is there a mobile app available?",
-    answer: "Currently, SmartLearn is a web-based platform optimized for all devices. Our responsive design ensures you have a great experience on mobile, tablet, and desktop."
+    answer: "Currently, AcadBridge is a web-based platform optimized for all devices. Our responsive design ensures you have a great experience on mobile, tablet, and desktop."
   },
   {
     question: "How can I get help with course content?",
@@ -55,7 +55,7 @@ const FAQ = () => {
             Frequently Asked <span className="hero-text">Questions</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions about SmartLearn and how to make the most of our platform
+            Find answers to common questions about AcadBridge and how to make the most of our platform
           </p>
         </motion.div>
 

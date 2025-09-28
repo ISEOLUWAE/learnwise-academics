@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="bg-gradient-primary p-2 rounded-lg">
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold hero-text">SmartLearn</span>
+              <span className="text-xl font-bold hero-text">AcadBridge</span>
             </div>
             <p className="text-muted-foreground">
               Empowering students with quality education and innovative learning tools to achieve academic excellence.
@@ -77,7 +77,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>info@smartlearn.edu</span>
+                <span>info@AcadBridge.edu</span>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <Phone className="h-4 w-4" />
@@ -92,7 +92,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/10 mt-8 pt-8 text-center text-muted-foreground">
-          <p>&copy; 2024 SmartLearn. All rights reserved. | Built with passion for education.</p>
+          <p>&copy; 2024 AcadBridge. All rights reserved. | Built with passion for education.</p>
         </div>
       </div>
     </footer>
