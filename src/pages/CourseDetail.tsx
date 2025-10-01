@@ -215,15 +215,55 @@ const CourseDetail = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <Tabs defaultValue="overview" className="space-y-8">
-                <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 gap-1">
-                  <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1">Overview</TabsTrigger>
-                  <TabsTrigger value="textbooks" className="text-xs sm:text-sm px-2 py-1">Textbooks</TabsTrigger>
-                  <TabsTrigger value="materials" className="text-xs sm:text-sm px-2 py-1">Materials</TabsTrigger>
-                  <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 py-1">Past Q's</TabsTrigger>
-                  <TabsTrigger value="quiz" className="text-xs sm:text-sm px-2 py-1">Quiz</TabsTrigger>
-                  <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-1">History</TabsTrigger>
-                  <TabsTrigger value="leaderboard" className="text-xs sm:text-sm px-2 py-1">Board</TabsTrigger>
-                  <TabsTrigger value="community" className="text-xs sm:text-sm px-2 py-1">Community</TabsTrigger>
+                <TabsList className="flex flex-wrap w-full justify-center gap-1 h-auto p-1.5 bg-bg-secondary/50 backdrop-blur border border-white/10 rounded-lg">
+                  <TabsTrigger 
+                    value="overview" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="textbooks" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Textbooks
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="materials" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Materials
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="questions" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Past Q's
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="quiz" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Quiz
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="history" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    History
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="leaderboard" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Board
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="community" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    Community
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
