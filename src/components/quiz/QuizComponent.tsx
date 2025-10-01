@@ -191,30 +191,60 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
     });
     
     const finalScore = Math.round((correctCount / questions.length) * 100);
+    const timeTaken = (parseInt(selectedTimeLimit) * 60) - timeRemaining;
     setScore(finalScore);
     setAnswers(finalAnswers);
     setQuizCompleted(true);
 
-    // Save to leaderboard if user is authenticated
-    if (user && finalScore > 0) {
+    // Save to both leaderboard and quiz history if user is authenticated
+    if (user) {
       try {
-        const { error } = await supabase
-          .from('leaderboard')
-          .upsert({
+        // Save to leaderboard
+        if (finalScore > 0) {
+          const { error: leaderboardError } = await supabase
+            .from('leaderboard')
+            .upsert({
+              course_id: courseId,
+              user_id: user.id,
+              name: user.email?.split('@')[0] || 'Anonymous',
+              score: finalScore,
+              avatar: user.email?.charAt(0).toUpperCase() || 'A'
+            }, {
+              onConflict: 'course_id,user_id'
+            });
+
+          if (leaderboardError) {
+            console.error('Error saving score:', leaderboardError);
+          }
+        }
+
+        // Save to quiz history
+        const questionsData = questions.map((q, index) => ({
+          question: q.question,
+          options: q.options,
+          correct_answer: q.correct_answer,
+          user_answer: finalAnswers[index],
+          is_correct: finalAnswers[index] === q.correct_answer,
+          explanation: q.explanation
+        }));
+
+        const { error: historyError } = await supabase
+          .from('quiz_history')
+          .insert({
             course_id: courseId,
             user_id: user.id,
-            name: user.email?.split('@')[0] || 'Anonymous',
+            user_name: user.email?.split('@')[0] || 'Anonymous',
             score: finalScore,
-            avatar: user.email?.charAt(0).toUpperCase() || 'A'
-          }, {
-            onConflict: 'course_id,user_id'
+            total_questions: questions.length,
+            time_taken: timeTaken,
+            questions_data: questionsData
           });
 
-        if (error) {
-          console.error('Error saving score:', error);
+        if (historyError) {
+          console.error('Error saving quiz history:', historyError);
         }
       } catch (error) {
-        console.error('Error saving to leaderboard:', error);
+        console.error('Error saving quiz results:', error);
       }
     }
   };

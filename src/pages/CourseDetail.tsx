@@ -20,6 +20,7 @@ import {
   Play
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
+import QuizHistory from "@/components/quiz/QuizHistory";
 import Leaderboard from "@/components/course/Leaderboard";
 import Community from "@/components/course/Community";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,12 +215,13 @@ const CourseDetail = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <Tabs defaultValue="overview" className="space-y-8">
-                <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 gap-1">
+                <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 gap-1">
                   <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1">Overview</TabsTrigger>
                   <TabsTrigger value="textbooks" className="text-xs sm:text-sm px-2 py-1">Textbooks</TabsTrigger>
                   <TabsTrigger value="materials" className="text-xs sm:text-sm px-2 py-1">Materials</TabsTrigger>
                   <TabsTrigger value="questions" className="text-xs sm:text-sm px-2 py-1">Past Q's</TabsTrigger>
                   <TabsTrigger value="quiz" className="text-xs sm:text-sm px-2 py-1">Quiz</TabsTrigger>
+                  <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-1">History</TabsTrigger>
                   <TabsTrigger value="leaderboard" className="text-xs sm:text-sm px-2 py-1">Board</TabsTrigger>
                   <TabsTrigger value="community" className="text-xs sm:text-sm px-2 py-1">Community</TabsTrigger>
                 </TabsList>
@@ -330,6 +332,10 @@ const CourseDetail = () => {
 
                 <TabsContent value="quiz" className="space-y-6">
                   <QuizComponent courseId={course.id} courseTitle={course.title} />
+                </TabsContent>
+
+                <TabsContent value="history" className="space-y-6">
+                  <QuizHistory courseId={course.id} courseTitle={course.title} />
                 </TabsContent>
 
                 <TabsContent value="leaderboard" className="space-y-6">

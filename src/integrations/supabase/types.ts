@@ -265,6 +265,42 @@ export type Database = {
           },
         ]
       }
+      quiz_history: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          questions_data: Json
+          score: number
+          time_taken: number | null
+          total_questions: number
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          questions_data: Json
+          score?: number
+          time_taken?: number | null
+          total_questions: number
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          questions_data?: Json
+          score?: number
+          time_taken?: number | null
+          total_questions?: number
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       quiz_questions: {
         Row: {
           correct_answer: number
