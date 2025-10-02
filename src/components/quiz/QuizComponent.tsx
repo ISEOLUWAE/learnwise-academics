@@ -25,9 +25,11 @@ interface Question {
 interface QuizComponentProps {
   courseId: string;
   courseTitle: string;
+  hasWatchedAds?: boolean;
+  onQuizAccess?: () => boolean;
 }
 
-const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
+const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAccess }: QuizComponentProps) => {
   const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
@@ -131,6 +133,11 @@ const QuizComponent = ({ courseId, courseTitle }: QuizComponentProps) => {
   };
 
   const startQuiz = () => {
+    // Check if ads have been watched before starting quiz
+    if (onQuizAccess && !onQuizAccess()) {
+      return;
+    }
+
     if (allQuestions.length === 0) return;
 
     const questionCount = Math.min(parseInt(selectedQuestionCount), allQuestions.length);

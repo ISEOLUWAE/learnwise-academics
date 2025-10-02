@@ -24,6 +24,9 @@ import QuizHistory from "@/components/quiz/QuizHistory";
 import Leaderboard from "@/components/course/Leaderboard";
 import Community from "@/components/course/Community";
 import { supabase } from "@/integrations/supabase/client";
+import { AdViewerModal } from "@/components/ads/AdViewerModal";
+import { useAdVerification } from "@/hooks/useAdVerification";
+import { toast } from "sonner";
 
 interface Course {
   id: string;
@@ -72,12 +75,15 @@ interface LeaderboardEntry {
 const CourseDetail = () => {
   const { courseCode } = useParams();
   const { user, loading } = useAuth();
+  const { hasWatchedAds, loading: adLoading, markAdsAsWatched } = useAdVerification();
   const [course, setCourse] = useState<Course | null>(null);
   const [textbooks, setTextbooks] = useState<Textbook[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [pastQuestions, setPastQuestions] = useState<PastQuestion[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [courseLoading, setCourseLoading] = useState(true);
+  const [showAdModal, setShowAdModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'download' | 'quiz' | null>(null);
 
   useEffect(() => {
     if (courseCode) {
@@ -160,6 +166,37 @@ const CourseDetail = () => {
     }
   };
 
+  const handleDownloadClick = (url: string) => {
+    if (!hasWatchedAds) {
+      setPendingAction('download');
+      setShowAdModal(true);
+    } else {
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleQuizAccess = () => {
+    if (!hasWatchedAds) {
+      setPendingAction('quiz');
+      setShowAdModal(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleAdComplete = () => {
+    markAdsAsWatched();
+    setShowAdModal(false);
+    
+    if (pendingAction === 'download') {
+      toast.success("You can now download files!");
+    } else if (pendingAction === 'quiz') {
+      toast.success("You can now start the quiz!");
+    }
+    
+    setPendingAction(null);
+  };
+
   return (
     <Layout>
       <div className="pt-20">
@@ -200,10 +237,6 @@ const CourseDetail = () => {
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-brand-green" />
                   <span>{course.semester} Semester</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-brand-orange" />
-                  <span>{course.department}</span>
                 </div>
               </div>
             </motion.div>
@@ -302,7 +335,11 @@ const CourseDetail = () => {
                                 by {book.author} ({book.year})
                               </p>
                             </div>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDownloadClick(book.download_link)}
+                            >
                               <Download className="h-4 w-4 mr-2" />
                               Download
                             </Button>
@@ -333,7 +370,11 @@ const CourseDetail = () => {
                                 </p>
                               </div>
                             </div>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDownloadClick(material.link)}
+                            >
                               {material.type === "video" ? <Play className="h-4 w-4 mr-2" /> : <Download className="h-4 w-4 mr-2" />}
                               {material.type === "video" ? "Watch" : "Download"}
                             </Button>
@@ -359,7 +400,11 @@ const CourseDetail = () => {
                               <h3 className="font-semibold">{question.year} - {question.semester} Semester</h3>
                               <p className="text-sm text-muted-foreground">Past examination questions</p>
                             </div>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDownloadClick(question.link)}
+                            >
                               <Download className="h-4 w-4 mr-2" />
                               Download
                             </Button>
@@ -371,7 +416,12 @@ const CourseDetail = () => {
                 </TabsContent>
 
                 <TabsContent value="quiz" className="space-y-6">
-                  <QuizComponent courseId={course.id} courseTitle={course.title} />
+                  <QuizComponent 
+                    courseId={course.id} 
+                    courseTitle={course.title}
+                    hasWatchedAds={hasWatchedAds}
+                    onQuizAccess={handleQuizAccess}
+                  />
                 </TabsContent>
 
                 <TabsContent value="history" className="space-y-6">
@@ -390,6 +440,14 @@ const CourseDetail = () => {
           </div>
         </section>
       </div>
+
+      <AdViewerModal 
+        open={showAdModal}
+        onClose={() => setShowAdModal(false)}
+        onComplete={handleAdComplete}
+        video1Url=""
+        video2Url=""
+      />
     </Layout>
   );
 };

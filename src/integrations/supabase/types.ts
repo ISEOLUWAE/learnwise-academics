@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_views: {
+        Row: {
+          created_at: string
+          id: string
+          last_watched_at: string | null
+          updated_at: string
+          user_id: string
+          video_1_watched: boolean
+          video_2_watched: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_watched_at?: string | null
+          updated_at?: string
+          user_id: string
+          video_1_watched?: boolean
+          video_2_watched?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_watched_at?: string | null
+          updated_at?: string
+          user_id?: string
+          video_1_watched?: boolean
+          video_2_watched?: boolean
+        }
+        Relationships: []
+      }
       community_likes: {
         Row: {
           created_at: string
