@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Menu, X, BookOpen, User, LogOut, Calculator, LogIn } from "lucide-react";
+import { Menu, X, BookOpen, User, LogOut, Calculator, LogIn, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import GPACalculator from "@/components/courses/GPACalculator";
 
 const Header = () => {
@@ -11,6 +12,7 @@ const Header = () => {
   const [isGPAOpen, setIsGPAOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminRole();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -70,6 +72,14 @@ const Header = () => {
             
             {user ? (
               <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <User className="h-4 w-4" />
                   {user.email}
@@ -144,6 +154,14 @@ const Header = () => {
                 
                 {user ? (
                   <>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    )}
                     <div className="text-center text-sm text-muted-foreground py-2">
                       {user.email}
                     </div>
