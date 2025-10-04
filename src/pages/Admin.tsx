@@ -8,6 +8,9 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { AdminManagement } from '@/components/admin/AdminManagement';
 import { AuditLog } from '@/components/admin/AuditLog';
 import { MessageCenter } from '@/components/admin/MessageCenter';
+import { CourseManager } from '@/components/admin/CourseManager';
+import { NewsManager } from '@/components/admin/NewsManager';
+import { ScholarshipManager } from '@/components/admin/ScholarshipManager';
 import { Loader2, Shield } from 'lucide-react';
 
 const Admin = () => {
@@ -43,16 +46,31 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="files" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="files">File Upload</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8 mb-8">
+            <TabsTrigger value="files">Files</TabsTrigger>
+            <TabsTrigger value="courses">Courses</TabsTrigger>
+            <TabsTrigger value="news">News</TabsTrigger>
+            <TabsTrigger value="scholarships">Scholarships</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
             {isHeadAdmin && <TabsTrigger value="admins">Admins</TabsTrigger>}
-            {isHeadAdmin && <TabsTrigger value="audit">Audit Log</TabsTrigger>}
+            {isHeadAdmin && <TabsTrigger value="audit">Audit</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="files">
             <FileUploader />
+          </TabsContent>
+
+          <TabsContent value="courses">
+            <CourseManager />
+          </TabsContent>
+
+          <TabsContent value="news">
+            <NewsManager />
+          </TabsContent>
+
+          <TabsContent value="scholarships">
+            <ScholarshipManager />
           </TabsContent>
 
           <TabsContent value="users">

@@ -1,23 +1,63 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface Course {
+  id: string;
+  code: string;
+  title: string;
+}
 
 export const FileUploader = () => {
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [fileType, setFileType] = useState<'textbook' | 'material' | 'past-question'>('textbook');
   const [file, setFile] = useState<File | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string>('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('id, code, title')
+        .order('code', { ascending: true });
+
+      if (error) throw error;
+      setCourses(data || []);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!file) {
       toast.error("Please select a file to upload");
+      return;
+    }
+
+    if (!selectedCourse) {
+      toast.error("Please select a course");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Please add a description");
       return;
     }
 
@@ -46,10 +86,24 @@ export const FileUploader = () => {
         .from(bucket)
         .getPublicUrl(filePath);
 
-      toast.success(`File uploaded successfully! URL: ${urlData.publicUrl}`);
+      // Log admin action
+      await supabase.from('admin_actions').insert({
+        admin_id: user?.id,
+        action_type: 'upload_file',
+        details: { 
+          file_type: fileType, 
+          file_name: file.name,
+          course_id: selectedCourse,
+          description 
+        }
+      });
+
+      toast.success(`File uploaded successfully! Description: ${description}`);
       
       // Reset form
       setFile(null);
+      setSelectedCourse('');
+      setDescription('');
       (e.target as HTMLFormElement).reset();
       
     } catch (error: any) {
@@ -86,6 +140,33 @@ export const FileUploader = () => {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="course">Select Course *</Label>
+            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a course" />
+              </SelectTrigger>
+              <SelectContent>
+                {courses.map((course) => (
+                  <SelectItem key={course.id} value={course.id}>
+                    {course.code} - {course.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">File Description *</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the file content..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="file">Select File</Label>
             <Input
               id="file"
@@ -95,7 +176,7 @@ export const FileUploader = () => {
             />
           </div>
 
-          <Button type="submit" disabled={uploading || !file} className="w-full">
+          <Button type="submit" disabled={uploading || !file || !selectedCourse || !description.trim()} className="w-full">
             {uploading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

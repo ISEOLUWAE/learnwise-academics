@@ -111,6 +111,7 @@ export type Database = {
           file_name: string | null
           file_url: string | null
           id: string
+          is_admin_reply: boolean
           likes: number
           parent_id: string | null
           updated_at: string
@@ -125,6 +126,7 @@ export type Database = {
           file_name?: string | null
           file_url?: string | null
           id?: string
+          is_admin_reply?: boolean
           likes?: number
           parent_id?: string | null
           updated_at?: string
@@ -139,6 +141,7 @@ export type Database = {
           file_name?: string | null
           file_url?: string | null
           id?: string
+          is_admin_reply?: boolean
           likes?: number
           parent_id?: string | null
           updated_at?: string
@@ -289,6 +292,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      news: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          date: string
+          excerpt: string
+          external_link: string | null
+          google_ads_slot: string | null
+          id: string
+          is_external: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          excerpt: string
+          external_link?: string | null
+          google_ads_slot?: string | null
+          id?: string
+          is_external?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          excerpt?: string
+          external_link?: string | null
+          google_ads_slot?: string | null
+          id?: string
+          is_external?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       past_questions: {
         Row: {
@@ -455,6 +503,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scholarships: {
+        Row: {
+          amount: string
+          apply_link: string
+          created_at: string
+          created_by: string | null
+          deadline: string
+          description: string
+          google_ads_slot: string | null
+          id: string
+          is_active: boolean
+          level: string
+          provider: string
+          requirements: Json
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: string
+          apply_link: string
+          created_at?: string
+          created_by?: string | null
+          deadline: string
+          description: string
+          google_ads_slot?: string | null
+          id?: string
+          is_active?: boolean
+          level: string
+          provider: string
+          requirements?: Json
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: string
+          apply_link?: string
+          created_at?: string
+          created_by?: string | null
+          deadline?: string
+          description?: string
+          google_ads_slot?: string | null
+          id?: string
+          is_active?: boolean
+          level?: string
+          provider?: string
+          requirements?: Json
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       textbooks: {
         Row: {

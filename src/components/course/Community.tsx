@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, MessageCircle, Send, Heart, Reply, Paperclip, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Users, MessageCircle, Send, Heart, Reply, Paperclip, FileText, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 interface CommunityPost {
   id: string;
@@ -21,6 +23,7 @@ interface CommunityPost {
   user_id: string;
   replies?: CommunityPost[];
   user_liked?: boolean;
+  is_admin_reply?: boolean;
 }
 
 interface CommunityProps {
@@ -30,6 +33,7 @@ interface CommunityProps {
 
 const Community = ({ courseId, courseTitle }: CommunityProps) => {
   const { user } = useAuth();
+  const { isAdmin } = useAdminRole();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(true);
@@ -149,7 +153,8 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
           user_name: user.email?.split('@')[0] || 'Anonymous',
           user_avatar: user.email?.charAt(0).toUpperCase() || 'A',
           content: replyContent,
-          parent_id: parentId
+          parent_id: parentId,
+          is_admin_reply: isAdmin
         })
         .select()
         .single();
@@ -308,6 +313,12 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="font-semibold text-sm">{post.user_name}</h4>
+                      {post.is_admin_reply && (
+                        <Badge variant="default" className="text-xs">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Admin
+                        </Badge>
+                      )}
                       <span className="text-xs text-muted-foreground">
                         {formatTimeAgo(post.created_at)}
                       </span>
@@ -381,6 +392,12 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="font-medium text-xs">{reply.user_name}</span>
+                                {reply.is_admin_reply && (
+                                  <Badge variant="default" className="text-xs">
+                                    <Shield className="h-3 w-3 mr-1" />
+                                    Admin
+                                  </Badge>
+                                )}
                                 <span className="text-xs text-muted-foreground">
                                   {formatTimeAgo(reply.created_at)}
                                 </span>
