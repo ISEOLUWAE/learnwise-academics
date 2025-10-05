@@ -190,12 +190,18 @@ export const FileUploader = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Choose a course" />
               </SelectTrigger>
-              <SelectContent>
-                {filteredCourses.map((course) => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.code} - {course.title}
-                  </SelectItem>
-                ))}
+              <SelectContent className="max-h-[300px]">
+                {filteredCourses.length === 0 ? (
+                  <div className="p-4 text-sm text-muted-foreground text-center">
+                    No courses found
+                  </div>
+                ) : (
+                  filteredCourses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.code} - {course.title}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

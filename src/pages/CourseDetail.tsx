@@ -91,6 +91,53 @@ const CourseDetail = () => {
     }
   }, [courseCode]);
 
+  useEffect(() => {
+    if (!course) return;
+
+    // Subscribe to realtime updates for course materials
+    const textbooksChannel = supabase
+      .channel('textbooks-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'textbooks',
+        filter: `course_id=eq.${course.id}`
+      }, () => {
+        fetchCourseData();
+      })
+      .subscribe();
+
+    const materialsChannel = supabase
+      .channel('materials-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'materials',
+        filter: `course_id=eq.${course.id}`
+      }, () => {
+        fetchCourseData();
+      })
+      .subscribe();
+
+    const pastQuestionsChannel = supabase
+      .channel('past-questions-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'past_questions',
+        filter: `course_id=eq.${course.id}`
+      }, () => {
+        fetchCourseData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(textbooksChannel);
+      supabase.removeChannel(materialsChannel);
+      supabase.removeChannel(pastQuestionsChannel);
+    };
+  }, [course]);
+
   const fetchCourseData = async () => {
     try {
       setCourseLoading(true);
