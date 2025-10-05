@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Course {
@@ -24,6 +24,7 @@ export const FileUploader = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [description, setDescription] = useState('');
+  const [courseSearch, setCourseSearch] = useState('');
 
   useEffect(() => {
     fetchCourses();
@@ -86,6 +87,36 @@ export const FileUploader = () => {
         .from(bucket)
         .getPublicUrl(filePath);
 
+      const fileUrl = urlData.publicUrl;
+
+      // Insert record into appropriate database table
+      if (fileType === 'textbook') {
+        const { error: dbError } = await supabase.from('textbooks').insert({
+          course_id: selectedCourse,
+          title: description,
+          author: 'Unknown', // You can add author field later if needed
+          year: new Date().getFullYear(),
+          download_link: fileUrl
+        });
+        if (dbError) throw dbError;
+      } else if (fileType === 'material') {
+        const { error: dbError } = await supabase.from('materials').insert({
+          course_id: selectedCourse,
+          title: description,
+          type: file.type.includes('video') ? 'video' : 'document',
+          link: fileUrl
+        });
+        if (dbError) throw dbError;
+      } else if (fileType === 'past-question') {
+        const { error: dbError } = await supabase.from('past_questions').insert({
+          course_id: selectedCourse,
+          year: new Date().getFullYear(),
+          semester: 'Current', // You can make this dynamic later
+          link: fileUrl
+        });
+        if (dbError) throw dbError;
+      }
+
       // Log admin action
       await supabase.from('admin_actions').insert({
         admin_id: user?.id,
@@ -94,11 +125,12 @@ export const FileUploader = () => {
           file_type: fileType, 
           file_name: file.name,
           course_id: selectedCourse,
-          description 
+          description,
+          file_url: fileUrl
         }
       });
 
-      toast.success(`File uploaded successfully! Description: ${description}`);
+      toast.success(`File uploaded successfully and added to ${fileType} section!`);
       
       // Reset form
       setFile(null);
@@ -114,13 +146,17 @@ export const FileUploader = () => {
     }
   };
 
+  const filteredCourses = courses.filter(course => 
+    course.code.toLowerCase().includes(courseSearch.toLowerCase()) ||
+    course.title.toLowerCase().includes(courseSearch.toLowerCase())
+  );
+
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Upload Course Files</CardTitle>
         <CardDescription>
-          Upload textbooks, materials, or past questions to Supabase Storage. 
-          After uploading, copy the file URL and add it to the respective database table.
+          Upload textbooks, materials, or past questions. Files will be automatically added to the course section.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -141,12 +177,21 @@ export const FileUploader = () => {
 
           <div className="space-y-2">
             <Label htmlFor="course">Select Course *</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by code or title..."
+                value={courseSearch}
+                onChange={(e) => setCourseSearch(e.target.value)}
+                className="pl-9 mb-2"
+              />
+            </div>
             <Select value={selectedCourse} onValueChange={setSelectedCourse}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose a course" />
               </SelectTrigger>
               <SelectContent>
-                {courses.map((course) => (
+                {filteredCourses.map((course) => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.code} - {course.title}
                   </SelectItem>

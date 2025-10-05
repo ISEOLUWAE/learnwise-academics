@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { BookOpen, Loader2, Plus, Trash2 } from 'lucide-react';
+import { BookOpen, Loader2, Plus, Trash2, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Course {
@@ -30,6 +30,7 @@ export const CourseManager = () => {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [formData, setFormData] = useState({
     code: '',
@@ -143,21 +144,38 @@ export const CourseManager = () => {
     );
   }
 
+  const filteredCourses = courses.filter(course =>
+    course.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
             <BookOpen className="h-5 w-5" />
             Course Management
           </CardTitle>
           <CardDescription>Add and manage courses in the system</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <Button onClick={() => setShowForm(!showForm)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {showForm ? 'Cancel' : 'Add New Course'}
-          </Button>
+        <CardContent className="space-y-4 md:space-y-6">
+          <div className="space-y-4">
+            <Button onClick={() => setShowForm(!showForm)} className="w-full md:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              {showForm ? 'Cancel' : 'Add New Course'}
+            </Button>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by course code or title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
 
           {showForm && (
             <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg">
@@ -290,40 +308,42 @@ export const CourseManager = () => {
             </form>
           )}
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Semester</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Units</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {courses.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.code}</TableCell>
-                  <TableCell>{course.title}</TableCell>
-                  <TableCell>{course.level}</TableCell>
-                  <TableCell className="capitalize">{course.semester}</TableCell>
-                  <TableCell className="capitalize">{course.status}</TableCell>
-                  <TableCell>{course.units}</TableCell>
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteCourse(course.id, course.code)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="hidden md:table-cell">Level</TableHead>
+                  <TableHead className="hidden md:table-cell">Semester</TableHead>
+                  <TableHead className="hidden lg:table-cell">Status</TableHead>
+                  <TableHead className="hidden lg:table-cell">Units</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredCourses.map((course) => (
+                  <TableRow key={course.id}>
+                    <TableCell className="font-medium">{course.code}</TableCell>
+                    <TableCell>{course.title}</TableCell>
+                    <TableCell className="hidden md:table-cell">{course.level}</TableCell>
+                    <TableCell className="capitalize hidden md:table-cell">{course.semester}</TableCell>
+                    <TableCell className="capitalize hidden lg:table-cell">{course.status}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{course.units}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteCourse(course.id, course.code)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

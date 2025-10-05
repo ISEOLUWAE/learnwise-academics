@@ -37,24 +37,21 @@ export const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (profilesError) throw profilesError;
-
-      // Get email from auth.users (admin only can access this)
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
+      // Call edge function to get users with emails (server-side only)
+      const { data, error } = await supabase.functions.invoke('get-users-with-emails');
       
-      if (!authError && authUsers) {
-        const usersWithEmail = profiles?.map(profile => ({
-          ...profile,
-          email: authUsers.find((u: any) => u.id === profile.id)?.email
-        })) || [];
-        setUsers(usersWithEmail);
-      } else {
+      if (error) {
+        console.error('Error fetching users from edge function:', error);
+        // Fallback to profiles only
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (profilesError) throw profilesError;
         setUsers(profiles || []);
+      } else {
+        setUsers(data.users || []);
       }
     } catch (error: any) {
       console.error('Error fetching users:', error);

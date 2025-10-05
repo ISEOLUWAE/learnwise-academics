@@ -39,14 +39,14 @@ const Admin = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <Shield className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <div className="flex items-center gap-3 mb-6 md:mb-8">
+          <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+          <h1 className="text-2xl md:text-4xl font-bold">Admin Dashboard</h1>
         </div>
 
         <Tabs defaultValue="files" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8 mb-8">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1 h-auto mb-6 md:mb-8">
             <TabsTrigger value="files">Files</TabsTrigger>
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="news">News</TabsTrigger>
