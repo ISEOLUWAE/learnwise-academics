@@ -32,29 +32,13 @@ export const AdminManagement = () => {
 
   const fetchAdmins = async () => {
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .in('role', ['admin', 'head_admin'])
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('manage-admin-users', {
+        body: { action: 'list_admins' }
+      });
 
       if (error) throw error;
 
-      // Get user details
-      const { data: { users: authUsers } } = await supabase.auth.admin.listUsers();
-      
-      const adminsWithDetails: AdminUser[] = (data || [])
-        .filter(admin => admin.role !== 'user')
-        .map(admin => ({
-          id: admin.id,
-          user_id: admin.user_id,
-          role: admin.role as 'admin' | 'head_admin',
-          created_at: admin.created_at,
-          email: authUsers?.find((u: any) => u.id === admin.user_id)?.email,
-          username: authUsers?.find((u: any) => u.id === admin.user_id)?.user_metadata?.username
-        }));
-
-      setAdmins(adminsWithDetails);
+      setAdmins(data.admins || []);
     } catch (error: any) {
       console.error('Error fetching admins:', error);
       toast.error('Failed to fetch admins');
@@ -71,12 +55,14 @@ export const AdminManagement = () => {
 
     setAdding(true);
     try {
-      // Find user by email
-      const { data: { users } } = await supabase.auth.admin.listUsers();
-      const targetUser = users?.find((u: any) => u.email === newAdminEmail);
+      // Find user by email using edge function
+      const { data: userData, error: findError } = await supabase.functions.invoke('manage-admin-users', {
+        body: { action: 'find_user', email: newAdminEmail.trim() }
+      });
 
-      if (!targetUser) {
-        toast.error('User not found');
+      if (findError || !userData?.user) {
+        toast.error('User not found with this email address');
+        setAdding(false);
         return;
       }
 
@@ -84,7 +70,7 @@ export const AdminManagement = () => {
       const { error } = await supabase
         .from('user_roles')
         .insert({
-          user_id: targetUser.id,
+          user_id: userData.user.id,
           role: 'admin',
           created_by: user?.id
         });
@@ -95,7 +81,7 @@ export const AdminManagement = () => {
       await supabase.from('admin_actions').insert({
         admin_id: user?.id,
         action_type: 'add_admin',
-        target_id: targetUser.id,
+        target_id: userData.user.id,
         details: { email: newAdminEmail }
       });
 

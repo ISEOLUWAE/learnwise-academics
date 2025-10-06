@@ -47,54 +47,61 @@ export const FileUploader = () => {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file) {
-      toast.error("Please select a file to upload");
-      return;
-    }
-
     if (!selectedCourse) {
       toast.error("Please select a course");
       return;
     }
 
     if (!description.trim()) {
-      toast.error("Please add a description");
+      toast.error("Please add a description or file link");
       return;
     }
 
     try {
       setUploading(true);
       
-      // Determine bucket based on file type
-      const bucketMap = {
-        'textbook': 'textbooks',
-        'material': 'materials',
-        'past-question': 'past-questions'
-      };
+      let fileUrl = description.trim();
       
-      const bucket = bucketMap[fileType];
-      const filePath = `${Date.now()}_${file.name}`;
+      // Check if it's a Google Drive link or URL
+      const isUrl = description.startsWith('http://') || description.startsWith('https://');
+      
+      // Only process file upload if a file is selected
+      if (file) {
+        // Determine bucket based on file type
+        const bucketMap = {
+          'textbook': 'textbooks',
+          'material': 'materials',
+          'past-question': 'past-questions'
+        };
+        
+        const bucket = bucketMap[fileType];
+        const filePath = `${Date.now()}_${file.name}`;
 
-      // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file);
+        // Upload file to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file);
 
-      if (error) throw error;
+        if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(filePath);
 
-      const fileUrl = urlData.publicUrl;
+        fileUrl = urlData.publicUrl;
+      } else if (!isUrl) {
+        toast.error("Please either upload a file or provide a valid link (http:// or https://)");
+        setUploading(false);
+        return;
+      }
 
       // Insert record into appropriate database table
       if (fileType === 'textbook') {
         const { error: dbError } = await supabase.from('textbooks').insert({
           course_id: selectedCourse,
-          title: description,
-          author: 'Unknown', // You can add author field later if needed
+          title: file ? file.name : description.substring(0, 100),
+          author: 'Admin Upload',
           year: new Date().getFullYear(),
           download_link: fileUrl
         });
@@ -102,8 +109,8 @@ export const FileUploader = () => {
       } else if (fileType === 'material') {
         const { error: dbError } = await supabase.from('materials').insert({
           course_id: selectedCourse,
-          title: description,
-          type: file.type.includes('video') ? 'video' : 'document',
+          title: file ? file.name : description.substring(0, 100),
+          type: file && file.type.includes('video') ? 'video' : 'document',
           link: fileUrl
         });
         if (dbError) throw dbError;
@@ -111,7 +118,7 @@ export const FileUploader = () => {
         const { error: dbError } = await supabase.from('past_questions').insert({
           course_id: selectedCourse,
           year: new Date().getFullYear(),
-          semester: 'Current', // You can make this dynamic later
+          semester: 'Current',
           link: fileUrl
         });
         if (dbError) throw dbError;
@@ -123,24 +130,25 @@ export const FileUploader = () => {
         action_type: 'upload_file',
         details: { 
           file_type: fileType, 
-          file_name: file.name,
+          file_name: file ? file.name : 'External Link',
           course_id: selectedCourse,
           description,
           file_url: fileUrl
         }
       });
 
-      toast.success(`File uploaded successfully and added to ${fileType} section!`);
+      toast.success(`${file ? 'File' : 'Link'} uploaded successfully and added to course!`);
       
       // Reset form
       setFile(null);
       setSelectedCourse('');
       setDescription('');
+      setCourseSearch('');
       (e.target as HTMLFormElement).reset();
       
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload file");
+      toast.error(error.message || "Failed to upload");
     } finally {
       setUploading(false);
     }
@@ -207,18 +215,21 @@ export const FileUploader = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">File Description *</Label>
+            <Label htmlFor="description">Description / Google Drive Link *</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the file content..."
+              placeholder="Enter file description OR paste Google Drive/external link (https://...)"
               rows={3}
             />
+            <p className="text-xs text-muted-foreground">
+              You can either upload a file below OR paste a link above
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file">Select File</Label>
+            <Label htmlFor="file">Select File (Optional if link provided)</Label>
             <Input
               id="file"
               type="file"
@@ -227,7 +238,7 @@ export const FileUploader = () => {
             />
           </div>
 
-          <Button type="submit" disabled={uploading || !file || !selectedCourse || !description.trim()} className="w-full">
+          <Button type="submit" disabled={uploading || !selectedCourse || !description.trim()} className="w-full">
             {uploading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

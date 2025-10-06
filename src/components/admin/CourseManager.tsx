@@ -109,7 +109,7 @@ export const CourseManager = () => {
   };
 
   const deleteCourse = async (id: string, code: string) => {
-    if (!confirm(`Are you sure you want to delete course ${code}?`)) return;
+    if (!confirm(`Are you sure you want to delete course ${code}? This will also remove all associated files and materials.`)) return;
 
     try {
       const { error } = await supabase
@@ -123,10 +123,11 @@ export const CourseManager = () => {
       await supabase.from('admin_actions').insert({
         admin_id: user?.id,
         action_type: 'delete_course',
+        target_id: id,
         details: { course_code: code }
       });
 
-      toast.success('Course deleted successfully');
+      toast.success('Course deleted successfully - changes will reflect immediately');
       fetchCourses();
     } catch (error: any) {
       console.error('Error deleting course:', error);
