@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,68 +7,80 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Calculator, Filter, BookOpen, Users, Clock } from "lucide-react";
+import { Search, Calculator, Filter, BookOpen, Users, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import GPACalculator from "@/components/courses/GPACalculator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Sample course data - will be replaced with actual course data
-const courses = [
-  {
-    id: "mth101",
-    code: "MTH 101",
-    title: "Elementary Mathematics I",
-    level: "100",
-    semester: "First",
-    units: 2,
-    department: "Computer Science",
-    status: "Compulsory",
-    students: 1250,
-    description: "Algebra, trigonometry, and basic mathematical concepts"
-  },
-  {
-    id: "cos101",
-    code: "COS 101",
-    title: "Introduction to Computing Sciences",
-    level: "100",
-    semester: "First",
-    units: 3,
-    department: "Computer Science",
-    status: "Compulsory",
-    students: 980,
-    description: "Basic computing concepts and programming fundamentals"
-  },
-  {
-    id: "gst111",
-    code: "GST 111",
-    title: "Communication in English",
-    level: "100",
-    semester: "First",
-    units: 2,
-    department: "Computer Science",
-    status: "Compulsory",
-    students: 1500,
-    description: "Effective communication and academic writing skills"
-  },
-  {
-    id: "phy101",
-    code: "PHY 101",
-    title: "General Physics I",
-    level: "100",
-    semester: "First",
-    units: 2,
-    department: "Computer Science",
-    status: "Compulsory",
-    students: 890,
-    description: "Classical mechanics and wave motion principles"
-  }
-];
+interface Course {
+  id: string;
+  code: string;
+  title: string;
+  level: string;
+  semester: string;
+  units: number;
+  department: string;
+  status: string;
+  description: string;
+}
 
 const Courses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [showGPACalculator, setShowGPACalculator] = useState(false);
-  const [filteredCourses, setFilteredCourses] = useState(courses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCourses();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('courses-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'courses'
+        },
+        () => {
+          fetchCourses();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('level', { ascending: true })
+        .order('code', { ascending: true });
+
+      if (error) throw error;
+
+      setCourses(data || []);
+      setFilteredCourses(data || []);
+    } catch (error: any) {
+      console.error('Error fetching courses:', error);
+      toast.error('Failed to load courses');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [searchTerm, selectedLevel, selectedSemester, courses]);
 
   const handleSearch = () => {
     const filtered = courses.filter(course => {
@@ -211,20 +223,32 @@ const Courses = () => {
         {/* Courses List */}
         <section className="py-12">
           <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-8"
-            >
-              <h2 className="text-2xl font-bold mb-2">Available Courses</h2>
-              <p className="text-muted-foreground">
-                Found {filteredCourses.length} courses matching your criteria
-              </p>
-            </motion.div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="mb-8"
+                >
+                  <h2 className="text-2xl font-bold mb-2">Available Courses</h2>
+                  <p className="text-muted-foreground">
+                    Found {filteredCourses.length} courses matching your criteria
+                  </p>
+                </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCourses.map((course, index) => (
+                {filteredCourses.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground">No courses found</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredCourses.map((course, index) => (
                 <motion.div
                   key={course.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -247,32 +271,31 @@ const Courses = () => {
                         <span>{course.semester} Semester</span>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-muted-foreground text-sm">
-                        {course.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-1">
-                          <BookOpen className="h-4 w-4 text-brand-blue" />
-                          <span>{course.units} Units</span>
+                      <CardContent className="space-y-4">
+                        <p className="text-muted-foreground text-sm">
+                          {course.description}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1">
+                            <BookOpen className="h-4 w-4 text-brand-blue" />
+                            <span>{course.units} Units</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4 text-brand-green" />
-                          <span>{course.students}</span>
-                        </div>
-                      </div>
-                      
-                      <Link to={`/course/${course.id}`}>
-                        <Button variant="gradient" className="w-full">
-                          View Course Details
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                        
+                        <Link to={`/course/${course.id}`}>
+                          <Button variant="gradient" className="w-full">
+                            View Course Details
+                          </Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </section>
 

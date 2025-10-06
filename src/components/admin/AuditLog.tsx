@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, FileText, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuditLogEntry {
   id: string;
@@ -18,6 +20,7 @@ interface AuditLogEntry {
 }
 
 export const AuditLog = () => {
+  const { user } = useAuth();
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,12 +55,31 @@ export const AuditLog = () => {
     }
   };
 
+  const deleteLog = async (logId: string) => {
+    try {
+      const { error } = await supabase
+        .from('admin_actions')
+        .delete()
+        .eq('id', logId);
+
+      if (error) throw error;
+
+      toast.success('Log deleted successfully');
+      fetchLogs();
+    } catch (error: any) {
+      console.error('Error deleting log:', error);
+      toast.error('Failed to delete log');
+    }
+  };
+
   const getActionBadge = (actionType: string) => {
     const colorMap: Record<string, string> = {
       'add_admin': 'bg-blue-500',
       'remove_admin': 'bg-red-500',
       'upload_file': 'bg-green-500',
       'send_message': 'bg-purple-500',
+      'add_course': 'bg-cyan-500',
+      'delete_course': 'bg-orange-500',
     };
 
     return (
@@ -87,28 +109,42 @@ export const AuditLog = () => {
         <CardDescription>All admin actions are logged here</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Timestamp</TableHead>
-              <TableHead>Admin</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead>Details</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {logs.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell>{new Date(log.created_at).toLocaleString()}</TableCell>
-                <TableCell>{log.admin_email || 'Unknown'}</TableCell>
-                <TableCell>{getActionBadge(log.action_type)}</TableCell>
-                <TableCell className="max-w-md truncate">
-                  {JSON.stringify(log.details)}
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>Admin</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Details</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="whitespace-nowrap">
+                    {new Date(log.created_at).toLocaleString()}
+                  </TableCell>
+                  <TableCell>{log.admin_email || 'Unknown'}</TableCell>
+                  <TableCell>{getActionBadge(log.action_type)}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {JSON.stringify(log.details)}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteLog(log.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

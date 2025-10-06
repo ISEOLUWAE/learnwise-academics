@@ -325,11 +325,18 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
                     </div>
                     <p className="text-sm leading-relaxed mb-3">{post.content}</p>
                     
-                    {post.file_name && (
-                      <div className="flex items-center gap-2 mb-3 p-2 bg-bg-secondary/30 rounded-lg">
+                    {post.file_url && post.file_name && (
+                      <a 
+                        href={post.file_url} 
+                        download={post.file_name}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 mb-3 p-2 bg-bg-secondary/30 rounded-lg hover:bg-bg-secondary/50 transition-colors"
+                      >
                         <FileText className="h-4 w-4" />
                         <span className="text-sm">{post.file_name}</span>
-                      </div>
+                        <span className="text-xs text-muted-foreground ml-auto">Click to download</span>
+                      </a>
                     )}
                     
                     <div className="flex items-center gap-4">

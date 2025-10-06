@@ -39,22 +39,22 @@ const Admin = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-4 md:py-8">
-        <div className="flex items-center gap-3 mb-6 md:mb-8">
-          <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-          <h1 className="text-2xl md:text-4xl font-bold">Admin Dashboard</h1>
+      <div className="container mx-auto px-3 sm:px-4 py-4 md:py-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 md:mb-8">
+          <Shield className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-primary flex-shrink-0" />
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-bold">Admin Dashboard</h1>
         </div>
 
         <Tabs defaultValue="files" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1 h-auto mb-6 md:mb-8">
-            <TabsTrigger value="files">Files</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="news">News</TabsTrigger>
-            <TabsTrigger value="scholarships">Scholarships</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            {isHeadAdmin && <TabsTrigger value="admins">Admins</TabsTrigger>}
-            {isHeadAdmin && <TabsTrigger value="audit">Audit</TabsTrigger>}
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1 h-auto mb-4 sm:mb-6 md:mb-8 p-1">
+            <TabsTrigger value="files" className="text-xs sm:text-sm py-2">Files</TabsTrigger>
+            <TabsTrigger value="courses" className="text-xs sm:text-sm py-2">Courses</TabsTrigger>
+            <TabsTrigger value="news" className="text-xs sm:text-sm py-2">News</TabsTrigger>
+            <TabsTrigger value="scholarships" className="text-xs sm:text-sm py-2">Scholarships</TabsTrigger>
+            <TabsTrigger value="users" className="text-xs sm:text-sm py-2">Users</TabsTrigger>
+            <TabsTrigger value="messages" className="text-xs sm:text-sm py-2">Messages</TabsTrigger>
+            {isHeadAdmin && <TabsTrigger value="admins" className="text-xs sm:text-sm py-2">Admins</TabsTrigger>}
+            {isHeadAdmin && <TabsTrigger value="audit" className="text-xs sm:text-sm py-2">Audit</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="files">
