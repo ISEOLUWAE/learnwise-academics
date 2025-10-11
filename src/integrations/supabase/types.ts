@@ -103,6 +103,51 @@ export type Database = {
           },
         ]
       }
+      departmental_courses: {
+        Row: {
+          course_code: string
+          course_title: string
+          created_at: string
+          created_by: string | null
+          department: string
+          id: string
+          level: string
+          semester: string
+          session: string
+          status: string
+          units: number
+          updated_at: string
+        }
+        Insert: {
+          course_code: string
+          course_title: string
+          created_at?: string
+          created_by?: string | null
+          department: string
+          id?: string
+          level: string
+          semester: string
+          session: string
+          status?: string
+          units?: number
+          updated_at?: string
+        }
+        Update: {
+          course_code?: string
+          course_title?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          id?: string
+          level?: string
+          semester?: string
+          session?: string
+          status?: string
+          units?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           content: string

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Calculator, Filter, BookOpen, Users, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import GPACalculator from "@/components/courses/GPACalculator";
+import DepartmentalCourseListing from "@/components/courses/DepartmentalCourseListing";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -30,6 +31,7 @@ const Courses = () => {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [showGPACalculator, setShowGPACalculator] = useState(false);
+  const [showDepartmentalCourses, setShowDepartmentalCourses] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +121,36 @@ const Courses = () => {
         {/* Search and Tools Section */}
         <section className="py-12 bg-bg-secondary/30">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Navigation Tabs */}
+            <div className="flex justify-center mb-8">
+              <div className="bg-bg-secondary/50 backdrop-blur border-white/10 rounded-lg p-1">
+                <button
+                  onClick={() => setShowDepartmentalCourses(false)}
+                  className={`px-6 py-2 rounded-md transition-all ${
+                    !showDepartmentalCourses
+                      ? 'bg-primary text-white shadow-md'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Course Search & Details
+                </button>
+                <button
+                  onClick={() => setShowDepartmentalCourses(true)}
+                  className={`px-6 py-2 rounded-md transition-all ${
+                    showDepartmentalCourses
+                      ? 'bg-primary text-white shadow-md'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Departmental Course Listings
+                </button>
+              </div>
+            </div>
+
+            {showDepartmentalCourses ? (
+              <DepartmentalCourseListing />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Search Bar */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -210,7 +241,8 @@ const Courses = () => {
                   </CardContent>
                 </Card>
               </motion.div>
-            </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -221,8 +253,9 @@ const Courses = () => {
         />
 
         {/* Courses List */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
+        {!showDepartmentalCourses && (
+          <section className="py-12">
+            <div className="container mx-auto px-4">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -262,8 +295,8 @@ const Courses = () => {
                         <Badge variant="outline" className="text-brand-blue border-brand-blue">
                           {course.code}
                         </Badge>
-                        <Badge variant={course.status === "Compulsory" ? "default" : "secondary"}>
-                          {course.status}
+                        <Badge variant={course.status === "C" || course.status === "Compulsory" ? "default" : "secondary"}>
+                          {course.status === "C" ? "Compulsory" : course.status === "E" ? "Elective" : course.status}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
@@ -283,7 +316,7 @@ const Courses = () => {
                           </div>
                         </div>
                         
-                        <Link to={`/course/${course.id}`}>
+                        <Link to={`/course/${encodeURIComponent(course.code)}`}>
                           <Button variant="gradient" className="w-full">
                             View Course Details
                           </Button>
@@ -298,6 +331,7 @@ const Courses = () => {
             )}
           </div>
         </section>
+        )}
 
         {/* Course Finder Results Summary */}
         <section className="py-12 bg-bg-secondary/30">

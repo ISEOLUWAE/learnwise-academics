@@ -9,6 +9,7 @@ import { AdminManagement } from '@/components/admin/AdminManagement';
 import { AuditLog } from '@/components/admin/AuditLog';
 import { MessageCenter } from '@/components/admin/MessageCenter';
 import { CourseManager } from '@/components/admin/CourseManager';
+import { DepartmentalCourseManager } from '@/components/admin/DepartmentalCourseManager';
 import { NewsManager } from '@/components/admin/NewsManager';
 import { ScholarshipManager } from '@/components/admin/ScholarshipManager';
 import { Loader2, Shield } from 'lucide-react';
@@ -46,9 +47,10 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="files" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1 h-auto mb-4 sm:mb-6 md:mb-8 p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-1 h-auto mb-4 sm:mb-6 md:mb-8 p-1">
             <TabsTrigger value="files" className="text-xs sm:text-sm py-2">Files</TabsTrigger>
             <TabsTrigger value="courses" className="text-xs sm:text-sm py-2">Courses</TabsTrigger>
+            <TabsTrigger value="dept-courses" className="text-xs sm:text-sm py-2">Dept Courses</TabsTrigger>
             <TabsTrigger value="news" className="text-xs sm:text-sm py-2">News</TabsTrigger>
             <TabsTrigger value="scholarships" className="text-xs sm:text-sm py-2">Scholarships</TabsTrigger>
             <TabsTrigger value="users" className="text-xs sm:text-sm py-2">Users</TabsTrigger>
@@ -63,6 +65,10 @@ const Admin = () => {
 
           <TabsContent value="courses">
             <CourseManager />
+          </TabsContent>
+
+          <TabsContent value="dept-courses">
+            <DepartmentalCourseManager />
           </TabsContent>
 
           <TabsContent value="news">

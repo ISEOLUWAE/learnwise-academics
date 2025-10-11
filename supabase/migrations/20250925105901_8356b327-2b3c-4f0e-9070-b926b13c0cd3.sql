@@ -147,7 +147,7 @@ CREATE TRIGGER update_leaderboard_updated_at
 
 -- Insert sample course data
 INSERT INTO public.courses (code, title, level, semester, units, department, status, description, overview) VALUES
-('MTH 101', 'Elementary Mathematics I', '100', 'First', 2, 'Computer Science', 'Compulsory', 
+('MTH 101', 'Elementary Mathematics I', '100', 'First', 2, 'Mathematics', 'Compulsory', 
  'This course covers fundamental mathematical concepts including algebra, trigonometry, and basic calculus. Students will develop problem-solving skills essential for computer science applications.',
  'Elementary Mathematics I is designed to provide students with a solid foundation in mathematical concepts. The course emphasizes practical applications in computer science and prepares students for advanced mathematical courses.'),
 ('COS 101', 'Introduction to Computing Sciences', '100', 'First', 3, 'Computer Science', 'Compulsory',

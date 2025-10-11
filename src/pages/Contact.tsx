@@ -40,13 +40,13 @@ const Contact = () => {
     {
       icon: <Mail className="h-6 w-6" />,
       title: "Email",
-      content: "info@AcadBridge.edu",
+      content: "iseoluwae949@gmail.com",
       description: "Send us an email anytime"
     },
     {
       icon: <Phone className="h-6 w-6" />,
       title: "Phone",
-      content: "+234 (0) 123 456 789",
+      content: "+234 8054 821 648",
       description: "Call us during business hours"
     },
     {

@@ -142,15 +142,32 @@ const CourseDetail = () => {
     try {
       setCourseLoading(true);
       
-      // Format course code for database lookup
-      const formattedCode = courseCode?.replace(/([a-zA-Z]+)(\d+)/, '$1 $2').toUpperCase();
+      // Try to find course by exact code first, then try formatted version
+      let courseData = null;
+      let courseError = null;
       
-      // Fetch course details
-      const { data: courseData, error: courseError } = await supabase
+      // First try with the exact code from URL (decode it first)
+      const decodedCode = decodeURIComponent(courseCode || '');
+      const exactResult = await supabase
         .from('courses')
         .select('*')
-        .eq('code', formattedCode)
+        .eq('code', decodedCode)
         .single();
+      
+      if (exactResult.data) {
+        courseData = exactResult.data;
+      } else {
+        // If not found, try with formatted code (adding space between letters and numbers)
+        const formattedCode = decodedCode.replace(/([a-zA-Z]+)(\d+)/, '$1 $2').toUpperCase();
+        const formattedResult = await supabase
+          .from('courses')
+          .select('*')
+          .eq('code', formattedCode)
+          .single();
+        
+        courseData = formattedResult.data;
+        courseError = formattedResult.error;
+      }
 
       if (courseError) {
         console.error('Error fetching course:', courseError);
@@ -260,8 +277,8 @@ const CourseDetail = () => {
                 <Badge variant="outline" className="text-brand-blue border-brand-blue">
                   {course.code}
                 </Badge>
-                <Badge variant={course.status === "Compulsory" ? "default" : "secondary"}>
-                  {course.status}
+                <Badge variant={course.status === "C" || course.status === "Compulsory" ? "default" : "secondary"}>
+                  {course.status === "C" ? "Compulsory" : course.status === "E" ? "Elective" : course.status}
                 </Badge>
                 <Badge variant="outline">
                   {course.units} Units
