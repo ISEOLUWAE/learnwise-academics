@@ -156,7 +156,7 @@ const DepartmentalCourseListing = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Level Selection */}
             <div className="space-y-3">
               <label className="text-sm font-semibold flex items-center gap-2">
@@ -164,10 +164,10 @@ const DepartmentalCourseListing = () => {
                 Academic Level
               </label>
               <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary">
+                <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary h-12">
                   <SelectValue placeholder="Select Level" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-white/20 z-50">
                   {levels.map((level) => (
                     <SelectItem key={level} value={level}>
                       <div className="flex items-center gap-2">
@@ -187,10 +187,10 @@ const DepartmentalCourseListing = () => {
                 Department
               </label>
               <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary">
+                <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary h-12">
                   <SelectValue placeholder="Select Department" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-white/20 z-50">
                   {departments.map((dept) => (
                     <SelectItem key={dept} value={dept}>
                       {dept}
@@ -207,10 +207,10 @@ const DepartmentalCourseListing = () => {
                 Semester
               </label>
               <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary">
+                <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary h-12">
                   <SelectValue placeholder="Select Semester" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-white/20 z-50">
                   {semesters.map((semester) => (
                     <SelectItem key={semester} value={semester}>
                       <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ const DepartmentalCourseListing = () => {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               onClick={handleSearch} 
               disabled={loading || !selectedLevel || !selectedDepartment || !selectedSemester}
@@ -235,7 +235,8 @@ const DepartmentalCourseListing = () => {
               {loading ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Searching Courses...
+                  <span className="hidden sm:inline">Searching Courses...</span>
+                  <span className="sm:hidden">Searching...</span>
                 </>
               ) : (
                 <>

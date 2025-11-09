@@ -122,69 +122,83 @@ const Courses = () => {
         <section className="py-12 bg-bg-secondary/30">
           <div className="container mx-auto px-4">
             {/* Navigation Tabs */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-bg-secondary/50 backdrop-blur border-white/10 rounded-lg p-1">
-                <button
-                  onClick={() => setShowDepartmentalCourses(false)}
-                  className={`px-6 py-2 rounded-md transition-all ${
-                    !showDepartmentalCourses
-                      ? 'bg-primary text-white shadow-md'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Course Search & Details
-                </button>
-                <button
-                  onClick={() => setShowDepartmentalCourses(true)}
-                  className={`px-6 py-2 rounded-md transition-all ${
-                    showDepartmentalCourses
-                      ? 'bg-primary text-white shadow-md'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Departmental Course Listings
-                </button>
+            <div className="flex justify-center mb-8 px-4">
+              <div className="bg-bg-secondary/50 backdrop-blur border-white/10 rounded-lg p-1 w-full max-w-2xl">
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    onClick={() => setShowDepartmentalCourses(false)}
+                    className={`px-3 sm:px-6 py-3 rounded-md transition-all text-sm sm:text-base font-medium ${
+                      !showDepartmentalCourses
+                        ? 'bg-primary text-white shadow-md'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <span className="hidden sm:inline">Course Search & Details</span>
+                    <span className="sm:hidden">Search Courses</span>
+                  </button>
+                  <button
+                    onClick={() => setShowDepartmentalCourses(true)}
+                    className={`px-3 sm:px-6 py-3 rounded-md transition-all text-sm sm:text-base font-medium ${
+                      showDepartmentalCourses
+                        ? 'bg-primary text-white shadow-md'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <span className="hidden sm:inline">Departmental Course Listings</span>
+                    <span className="sm:hidden">Dept. Courses</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             {showDepartmentalCourses ? (
               <DepartmentalCourseListing />
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="space-y-6">
               {/* Search Bar */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="lg:col-span-2"
               >
-                <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Search className="h-5 w-5" />
+                <Card className="bg-gradient-to-br from-bg-secondary/80 to-bg-tertiary/80 backdrop-blur border-white/20 shadow-xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="p-2 rounded-lg bg-primary/20">
+                        <Search className="h-5 w-5 text-primary" />
+                      </div>
                       Course Search & Filter
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Search for courses by title, code, level, or semester
+                    </p>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-4 md:space-y-0 md:flex md:gap-4">
-                      <div className="flex-1">
-                        <Label htmlFor="search" className="text-sm font-medium mb-2 block">Course Title or Code</Label>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="search" className="text-sm font-semibold mb-2 block flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                          Course Title or Code
+                        </Label>
                         <Input
                           id="search"
                           placeholder="e.g., Mathematics, MTH 101"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="bg-bg-primary/50"
+                          className="bg-bg-primary/60 border-white/30 focus:border-primary h-12"
                         />
                       </div>
-                      <div className="flex gap-4 md:w-auto">
-                        <div className="flex-1 md:w-32">
-                          <Label className="text-sm font-medium mb-2 block">Level</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-semibold mb-2 block flex items-center gap-2">
+                            <Users className="h-4 w-4 text-primary" />
+                            Level
+                          </Label>
                           <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                            <SelectTrigger className="bg-bg-primary/50">
+                            <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary h-12">
                               <SelectValue placeholder="Level" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-background border-white/20">
                               <SelectItem value="100">100 Level</SelectItem>
                               <SelectItem value="200">200 Level</SelectItem>
                               <SelectItem value="300">300 Level</SelectItem>
@@ -192,13 +206,16 @@ const Courses = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="flex-1 md:w-32">
-                          <Label className="text-sm font-medium mb-2 block">Semester</Label>
+                        <div>
+                          <Label className="text-sm font-semibold mb-2 block flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-primary" />
+                            Semester
+                          </Label>
                           <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                            <SelectTrigger className="bg-bg-primary/50">
+                            <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary h-12">
                               <SelectValue placeholder="Semester" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-background border-white/20">
                               <SelectItem value="First">First</SelectItem>
                               <SelectItem value="Second">Second</SelectItem>
                             </SelectContent>
@@ -206,8 +223,8 @@ const Courses = () => {
                         </div>
                       </div>
                     </div>
-                    <Button onClick={handleSearch} className="w-full" variant="gradient">
-                      <Filter className="h-4 w-4 mr-2" />
+                    <Button onClick={handleSearch} className="w-full h-12 text-base font-semibold" variant="gradient">
+                      <Search className="h-5 w-5 mr-2" />
                       Search Courses
                     </Button>
                   </CardContent>
@@ -220,22 +237,25 @@ const Courses = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <Card className="bg-gradient-primary text-white h-full">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calculator className="h-5 w-5" />
+                <Card className="bg-gradient-primary text-white shadow-xl border-primary/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="p-2 rounded-lg bg-white/20">
+                        <Calculator className="h-5 w-5" />
+                      </div>
                       GPA Calculator
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="mb-4 opacity-90">
+                    <p className="mb-6 opacity-90 text-sm sm:text-base">
                       Calculate your GPA and CGPA with our advanced calculator tool
                     </p>
                     <Button 
                       variant="glass" 
-                      className="w-full"
+                      className="w-full h-12 text-base font-semibold"
                       onClick={() => setShowGPACalculator(true)}
                     >
+                      <Calculator className="h-5 w-5 mr-2" />
                       Open Calculator
                     </Button>
                   </CardContent>
