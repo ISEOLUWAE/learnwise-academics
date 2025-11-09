@@ -103,51 +103,6 @@ export type Database = {
           },
         ]
       }
-      departmental_courses: {
-        Row: {
-          course_code: string
-          course_title: string
-          created_at: string
-          created_by: string | null
-          department: string
-          id: string
-          level: string
-          semester: string
-          session: string
-          status: string
-          units: number
-          updated_at: string
-        }
-        Insert: {
-          course_code: string
-          course_title: string
-          created_at?: string
-          created_by?: string | null
-          department: string
-          id?: string
-          level: string
-          semester: string
-          session: string
-          status?: string
-          units?: number
-          updated_at?: string
-        }
-        Update: {
-          course_code?: string
-          course_title?: string
-          created_at?: string
-          created_by?: string | null
-          department?: string
-          id?: string
-          level?: string
-          semester?: string
-          session?: string
-          status?: string
-          units?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       community_posts: {
         Row: {
           content: string
@@ -253,6 +208,51 @@ export type Database = {
           title?: string
           units?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      departmental_courses: {
+        Row: {
+          course_code: string
+          course_title: string
+          created_at: string | null
+          created_by: string | null
+          department: string
+          id: string
+          level: string
+          semester: string
+          session: string
+          status: string
+          units: number
+          updated_at: string | null
+        }
+        Insert: {
+          course_code: string
+          course_title: string
+          created_at?: string | null
+          created_by?: string | null
+          department: string
+          id?: string
+          level: string
+          semester: string
+          session: string
+          status?: string
+          units?: number
+          updated_at?: string | null
+        }
+        Update: {
+          course_code?: string
+          course_title?: string
+          created_at?: string | null
+          created_by?: string | null
+          department?: string
+          id?: string
+          level?: string
+          semester?: string
+          session?: string
+          status?: string
+          units?: number
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -677,10 +677,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "head_admin" | "admin" | "user"
