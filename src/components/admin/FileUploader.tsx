@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, Loader2, Search, FileText, BookOpen, FileQuestion, Link, CloudUpload, CheckCircle } from "lucide-react";
+import { Upload, Loader2, Search, FileText, BookOpen, FileQuestion, Link, CloudUpload, CheckCircle, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Course {
@@ -24,7 +26,7 @@ export const FileUploader = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [description, setDescription] = useState('');
-  const [courseSearch, setCourseSearch] = useState('');
+  const [open, setOpen] = useState(false);
   const [uploadType, setUploadType] = useState<'file' | 'link'>('file');
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -160,7 +162,6 @@ export const FileUploader = () => {
       setFile(null);
       setSelectedCourse('');
       setDescription('');
-      setCourseSearch('');
       setTitle('');
       setAuthor('');
       setYear(new Date().getFullYear());
@@ -174,10 +175,6 @@ export const FileUploader = () => {
     }
   };
 
-  const filteredCourses = courses.filter(course => 
-    course.code.toLowerCase().includes(courseSearch.toLowerCase()) ||
-    course.title.toLowerCase().includes(courseSearch.toLowerCase())
-  );
 
   const getFileTypeIcon = (type: string) => {
     switch (type) {
@@ -251,36 +248,61 @@ export const FileUploader = () => {
             {/* Course Selection */}
             <div className="space-y-3">
               <Label className="text-sm font-semibold">Select Course *</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search courses by code or title..."
-                  value={courseSearch}
-                  onChange={(e) => setCourseSearch(e.target.value)}
-                  className="pl-9 mb-3"
-                />
-              </div>
-              <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Choose a course to upload to" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {filteredCourses.length === 0 ? (
-                    <div className="p-4 text-sm text-muted-foreground text-center">
-                      No courses found
-                    </div>
-                  ) : (
-                    filteredCourses.map((course) => (
-                      <SelectItem key={course.id} value={course.id}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{course.code}</span>
-                          <span className="text-xs text-muted-foreground">{course.title}</span>
-                        </div>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full h-12 justify-between"
+                  >
+                    {selectedCourse
+                      ? (() => {
+                          const selected = courses.find((course) => course.id === selectedCourse);
+                          return selected ? (
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">{selected.code}</span>
+                              <span className="text-xs text-muted-foreground">{selected.title}</span>
+                            </div>
+                          ) : "Select course...";
+                        })()
+                      : "Search and select a course..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 bg-background z-50" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search courses by code or title..." className="h-12" />
+                    <CommandList>
+                      <CommandEmpty>No course found.</CommandEmpty>
+                      <CommandGroup className="max-h-[300px] overflow-auto">
+                        {courses.map((course) => (
+                          <CommandItem
+                            key={course.id}
+                            value={`${course.code} ${course.title}`}
+                            onSelect={() => {
+                              setSelectedCourse(course.id);
+                              setOpen(false);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedCourse === course.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-medium">{course.code}</span>
+                              <span className="text-xs text-muted-foreground">{course.title}</span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Upload Type Selection */}
