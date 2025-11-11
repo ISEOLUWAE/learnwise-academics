@@ -178,59 +178,61 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-full sm:max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-            <Calculator className="h-5 w-5 sm:h-6 sm:w-6" />
-            GPA Calculator
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-[min(95vw,56rem)] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl">
+            <Calculator className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+            <span className="truncate">GPA Calculator</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Add Course Form */}
           <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                 Add Course
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                <div className="sm:col-span-2 md:col-span-1">
-                  <Label htmlFor="courseName" className="text-sm">Course Name (Optional)</Label>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="w-full">
+                  <Label htmlFor="courseName" className="text-xs sm:text-sm mb-1.5 block">Course Name (Optional)</Label>
                   <Input
                     id="courseName"
                     placeholder="e.g., Mathematics"
                     value={newCourse.name}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, name: e.target.value }))}
-                    className="text-sm"
+                    className="h-11 sm:h-10 text-sm w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="courseUnit" className="text-sm">Course Unit</Label>
-                  <Input
-                    id="courseUnit"
-                    type="number"
-                    placeholder="e.g., 3"
-                    value={newCourse.unit}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, unit: e.target.value }))}
-                    className="text-sm"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="courseScore" className="text-sm">Score (0-100)</Label>
-                  <Input
-                    id="courseScore"
-                    type="number"
-                    placeholder="e.g., 85"
-                    value={newCourse.score}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, score: e.target.value }))}
-                    className="text-sm"
-                  />
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <Label htmlFor="courseUnit" className="text-xs sm:text-sm mb-1.5 block">Course Unit</Label>
+                    <Input
+                      id="courseUnit"
+                      type="number"
+                      placeholder="e.g., 3"
+                      value={newCourse.unit}
+                      onChange={(e) => setNewCourse(prev => ({ ...prev, unit: e.target.value }))}
+                      className="h-11 sm:h-10 text-sm w-full"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="courseScore" className="text-xs sm:text-sm mb-1.5 block">Score (0-100)</Label>
+                    <Input
+                      id="courseScore"
+                      type="number"
+                      placeholder="e.g., 85"
+                      value={newCourse.score}
+                      onChange={(e) => setNewCourse(prev => ({ ...prev, score: e.target.value }))}
+                      className="h-11 sm:h-10 text-sm w-full"
+                    />
+                  </div>
                 </div>
               </div>
-              <Button onClick={addCourse} className="w-full" variant="gradient" size="sm">
+              <Button onClick={addCourse} className="w-full h-11 sm:h-10" variant="gradient">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Course
               </Button>
@@ -240,15 +242,15 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
           {/* CGPA Calculation Option */}
           {!showCGPA && (
             <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-              <CardContent className="pt-6">
-                <div className="text-center">
+              <CardContent className="pt-4 sm:pt-6 pb-4 sm:pb-6">
+                <div className="flex justify-center">
                   <Button 
                     variant="outline" 
                     onClick={() => setShowCGPA(true)}
-                    className="flex items-center gap-2"
+                    className="w-full sm:w-auto h-11 sm:h-10 text-sm"
                   >
-                    <BookOpen className="h-4 w-4" />
-                    Calculate CGPA (Include Previous Results)
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    <span className="truncate">Calculate CGPA (Include Previous Results)</span>
                   </Button>
                 </div>
               </CardContent>
@@ -265,30 +267,31 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
                 transition={{ duration: 0.3 }}
               >
                 <Card className="bg-brand-blue/10 border-brand-blue/20">
-                  <CardHeader>
-                    <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                      <span className="flex items-center gap-2 text-base sm:text-lg">
-                        <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-                        Previous Academic Records
+                  <CardHeader className="pb-3 sm:pb-6">
+                    <CardTitle className="flex flex-row items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                        <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                        <span className="truncate">Previous Records</span>
                       </span>
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => setShowCGPA(false)}
+                        className="h-8 w-8 p-0 flex-shrink-0"
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                       Add each semester's TUGP and Units separately (e.g., 100L First Semester, 100L Second Semester, etc.)
                     </p>
                     
                     {/* Add Semester Form */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-3 sm:gap-4">
                       <div>
-                        <Label htmlFor="semesterTUGP">Semester TUGP</Label>
+                        <Label htmlFor="semesterTUGP" className="text-xs sm:text-sm mb-1.5 block">Semester TUGP</Label>
                         <Input
                           id="semesterTUGP"
                           type="number"
@@ -296,50 +299,52 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
                           placeholder="e.g., 37.5"
                           value={newSemester.tugp}
                           onChange={(e) => setNewSemester(prev => ({ ...prev, tugp: e.target.value }))}
+                          className="h-11 sm:h-10 text-sm w-full"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="semesterUnits">Semester Units</Label>
+                        <Label htmlFor="semesterUnits" className="text-xs sm:text-sm mb-1.5 block">Semester Units</Label>
                         <Input
                           id="semesterUnits"
                           type="number"
                           placeholder="e.g., 9"
                           value={newSemester.units}
                           onChange={(e) => setNewSemester(prev => ({ ...prev, units: e.target.value }))}
+                          className="h-11 sm:h-10 text-sm w-full"
                         />
                       </div>
                     </div>
                     
-                    <Button onClick={addSemester} className="w-full" size="sm">
+                    <Button onClick={addSemester} className="w-full h-11 sm:h-10">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Semester
                     </Button>
 
                     {/* Previous Semesters List */}
                     {semesters.length > 0 && (
-                      <div className="space-y-2 mt-4">
-                        <Label className="text-sm font-semibold">Added Semesters ({semesters.length})</Label>
+                      <div className="space-y-2 mt-2">
+                        <Label className="text-xs sm:text-sm font-semibold">Added Semesters ({semesters.length})</Label>
                         <div className="space-y-2 max-h-40 overflow-y-auto">
                           {semesters.map((sem, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 rounded bg-bg-primary/50 text-sm">
-                              <div>
+                            <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded bg-bg-primary/50 gap-2">
+                              <div className="text-xs sm:text-sm flex-1 min-w-0">
                                 <span className="font-medium">Semester {index + 1}: </span>
-                                TUGP: {sem.tugp}, Units: {sem.units}
+                                <span className="break-words">TUGP: {sem.tugp}, Units: {sem.units}</span>
                               </div>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeSemester(index)}
-                                className="h-7 w-7 p-0"
+                                className="h-8 w-8 p-0 flex-shrink-0 self-end sm:self-center"
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                               </Button>
                             </div>
                           ))}
                         </div>
-                        <div className="pt-2 border-t border-white/10 text-sm">
-                          <p><strong>Total Previous TUGP:</strong> {semesters.reduce((sum, s) => sum + parseFloat(s.tugp || "0"), 0).toFixed(2)}</p>
-                          <p><strong>Total Previous Units:</strong> {semesters.reduce((sum, s) => sum + parseFloat(s.units || "0"), 0)}</p>
+                        <div className="pt-3 border-t border-white/10 text-xs sm:text-sm space-y-1">
+                          <p className="break-words"><strong>Total Previous TUGP:</strong> {semesters.reduce((sum, s) => sum + parseFloat(s.tugp || "0"), 0).toFixed(2)}</p>
+                          <p className="break-words"><strong>Total Previous Units:</strong> {semesters.reduce((sum, s) => sum + parseFloat(s.units || "0"), 0)}</p>
                         </div>
                       </div>
                     )}
@@ -352,17 +357,17 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
           {/* Courses List */}
           {courses.length > 0 && (
             <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Courses ({courses.length})</span>
-                  <Button variant="destructive" size="sm" onClick={clearAll}>
+              <CardHeader className="pb-3 sm:pb-6">
+                <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+                  <span className="text-base sm:text-lg">Courses ({courses.length})</span>
+                  <Button variant="destructive" size="sm" onClick={clearAll} className="w-full sm:w-auto h-9">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Clear All
                   </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {courses.map((course, index) => (
                     <motion.div
                       key={course.id}
@@ -370,20 +375,20 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-bg-primary/50 gap-2"
+                      className="flex flex-col gap-2 p-3 sm:p-4 rounded-lg bg-bg-primary/50"
                     >
-                      <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                      <div className="flex items-start gap-2 sm:gap-3 w-full">
                         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
                           {index + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm sm:text-base truncate">{course.name}</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
+                          <p className="font-medium text-sm sm:text-base break-words">{course.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                             {course.unit} units • Score: {course.score}% • Grade: {getGradeLetter(course.gradePoint)}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                      <div className="flex items-center gap-2 justify-between pl-9 sm:pl-11">
                         <Badge variant="outline" className="text-brand-green border-brand-green text-xs sm:text-sm">
                           {course.gradePoint} GP
                         </Badge>
@@ -391,7 +396,7 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeCourse(course.id)}
-                          className="text-red-500 hover:text-red-600 h-8 w-8 p-0"
+                          className="text-red-500 hover:text-red-600 h-8 w-8 p-0 flex-shrink-0"
                         >
                           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
@@ -406,50 +411,50 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
           {/* Results */}
           {courses.length > 0 && (
             <Card className="bg-gradient-primary text-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
+              <CardHeader className="pb-3 sm:pb-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Award className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   Results
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 sm:space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <div className="text-center p-3 sm:p-4 rounded-lg bg-white/10">
-                    <h3 className="text-base sm:text-lg font-semibold mb-2">Current GPA</h3>
-                    <p className="text-2xl sm:text-3xl font-bold">{formatGPA(currentGPA)}</p>
-                    <p className="text-xs sm:text-sm opacity-90">{getClassification(currentGPA)}</p>
+                <div className="flex flex-col gap-4">
+                  <div className="text-center p-4 sm:p-5 rounded-lg bg-white/10">
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-2">Current GPA</h3>
+                    <p className="text-3xl sm:text-4xl md:text-5xl font-bold">{formatGPA(currentGPA)}</p>
+                    <p className="text-xs sm:text-sm md:text-base opacity-90 mt-2 break-words px-2">{getClassification(currentGPA)}</p>
                   </div>
                   
                   {cgpa !== null && (
-                    <div className="text-center p-3 sm:p-4 rounded-lg bg-white/10">
-                      <h3 className="text-base sm:text-lg font-semibold mb-2">CGPA</h3>
-                      <p className="text-2xl sm:text-3xl font-bold">{formatGPA(cgpa)}</p>
-                      <p className="text-xs sm:text-sm opacity-90">{getClassification(cgpa)}</p>
+                    <div className="text-center p-4 sm:p-5 rounded-lg bg-white/10">
+                      <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-2">CGPA</h3>
+                      <p className="text-3xl sm:text-4xl md:text-5xl font-bold">{formatGPA(cgpa)}</p>
+                      <p className="text-xs sm:text-sm md:text-base opacity-90 mt-2 break-words px-2">{getClassification(cgpa)}</p>
                     </div>
                   )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-                  <div>
-                    <span className="opacity-90">Current Units:</span>
-                    <p className="font-semibold">{courses.reduce((sum, course) => sum + course.unit, 0)}</p>
+                  <div className="p-2 rounded bg-white/5">
+                    <span className="opacity-90 block mb-1">Current Units:</span>
+                    <p className="font-semibold text-sm sm:text-base">{courses.reduce((sum, course) => sum + course.unit, 0)}</p>
                   </div>
-                  <div>
-                    <span className="opacity-90">Current TUGP:</span>
-                    <p className="font-semibold">{courses.reduce((sum, course) => sum + (course.gradePoint * course.unit), 0).toFixed(2)}</p>
+                  <div className="p-2 rounded bg-white/5">
+                    <span className="opacity-90 block mb-1">Current TUGP:</span>
+                    <p className="font-semibold text-sm sm:text-base break-words">{courses.reduce((sum, course) => sum + (course.gradePoint * course.unit), 0).toFixed(2)}</p>
                   </div>
                   {cgpa !== null && (
                     <>
-                      <div>
-                        <span className="opacity-90">Total Units:</span>
-                        <p className="font-semibold">
+                      <div className="p-2 rounded bg-white/5">
+                        <span className="opacity-90 block mb-1">Total Units:</span>
+                        <p className="font-semibold text-sm sm:text-base">
                           {courses.reduce((sum, course) => sum + course.unit, 0) + 
                            semesters.reduce((sum, s) => sum + parseFloat(s.units || "0"), 0)}
                         </p>
                       </div>
-                      <div>
-                        <span className="opacity-90">Total TUGP:</span>
-                        <p className="font-semibold">
+                      <div className="p-2 rounded bg-white/5">
+                        <span className="opacity-90 block mb-1">Total TUGP:</span>
+                        <p className="font-semibold text-sm sm:text-base break-words">
                           {(courses.reduce((sum, course) => sum + (course.gradePoint * course.unit), 0) + 
                             semesters.reduce((sum, s) => sum + parseFloat(s.tugp || "0"), 0)).toFixed(2)}
                         </p>
@@ -463,33 +468,29 @@ const GPACalculator = ({ isOpen, onClose }: GPACalculatorProps) => {
 
           {/* Grading System Reference */}
           <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-            <CardHeader>
-              <CardTitle>Grading System</CardTitle>
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-base sm:text-lg">Grading System</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
-                <div className="space-y-1">
-                  <p className="font-semibold">70-100: A (5 points)</p>
-                  <p className="font-semibold">60-69: B (4 points)</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-semibold">50-59: C (3 points)</p>
-                  <p className="font-semibold">45-49: D (2 points)</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-semibold">40-44: E (1 point)</p>
-                  <p className="font-semibold">0-39: F (0 points)</p>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-2 sm:gap-3 text-xs sm:text-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <p className="font-semibold p-2 rounded bg-bg-primary/30">70-100: A (5 pts)</p>
+                  <p className="font-semibold p-2 rounded bg-bg-primary/30">60-69: B (4 pts)</p>
+                  <p className="font-semibold p-2 rounded bg-bg-primary/30">50-59: C (3 pts)</p>
+                  <p className="font-semibold p-2 rounded bg-bg-primary/30">45-49: D (2 pts)</p>
+                  <p className="font-semibold p-2 rounded bg-bg-primary/30">40-44: E (1 pt)</p>
+                  <p className="font-semibold p-2 rounded bg-bg-primary/30">0-39: F (0 pts)</p>
                 </div>
               </div>
               
-              <div className="mt-4 sm:mt-6 pt-4 border-t border-white/10">
-                <h4 className="font-semibold mb-2 text-sm sm:text-base">Degree Classification:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 text-xs sm:text-sm">
-                  <p>4.50 – 5.00: First Class Honours</p>
-                  <p>3.50 – 4.49: Second Class Honours (Upper)</p>
-                  <p>2.40 – 3.49: Second Class Honours (Lower)</p>
-                  <p>1.50 – 2.39: Third Class Honours</p>
-                  <p>1.00 – 1.49: Pass</p>
+              <div className="pt-3 sm:pt-4 border-t border-white/10">
+                <h4 className="font-semibold mb-2 sm:mb-3 text-xs sm:text-sm md:text-base">Degree Classification:</h4>
+                <div className="flex flex-col gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                  <p className="p-2 rounded bg-bg-primary/20">4.50 – 5.00: First Class Honours</p>
+                  <p className="p-2 rounded bg-bg-primary/20">3.50 – 4.49: Second Class Honours (Upper)</p>
+                  <p className="p-2 rounded bg-bg-primary/20">2.40 – 3.49: Second Class Honours (Lower)</p>
+                  <p className="p-2 rounded bg-bg-primary/20">1.50 – 2.39: Third Class Honours</p>
+                  <p className="p-2 rounded bg-bg-primary/20">1.00 – 1.49: Pass</p>
                 </div>
               </div>
             </CardContent>
