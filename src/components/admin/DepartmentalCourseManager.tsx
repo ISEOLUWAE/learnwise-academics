@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { BookOpen, Loader2, Plus, Trash2, Search, Upload, Download, BarChart3, Calculator } from 'lucide-react';
+import { BookOpen, Loader2, Plus, Trash2, Search, Upload, Download, BarChart3, Calculator, Database } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DepartmentalCourse {
@@ -34,6 +34,7 @@ export const DepartmentalCourseManager = () => {
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterSemester, setFilterSemester] = useState('all');
+  const [importing, setImporting] = useState(false);
 
   const [formData, setFormData] = useState({
     department: '',
@@ -254,6 +255,43 @@ export const DepartmentalCourseManager = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const importCSCourses = async () => {
+    if (!confirm('This will import all Computer Science courses (100-500 level) from the 2024-2025 handbook. Continue?')) {
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('You must be logged in to import courses');
+        return;
+      }
+
+      const response = await fetch('https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/import-cs-courses', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to import courses');
+      }
+
+      toast.success(result.message || 'Computer Science courses imported successfully');
+      fetchCourses();
+    } catch (error: any) {
+      console.error('Error importing CS courses:', error);
+      toast.error(error.message || 'Failed to import Computer Science courses');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -333,6 +371,25 @@ export const DepartmentalCourseManager = () => {
             <Button onClick={() => setShowForm(!showForm)} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               {showForm ? 'Cancel' : 'Add Course'}
+            </Button>
+
+            <Button 
+              onClick={importCSCourses} 
+              disabled={importing}
+              variant="default"
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              {importing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <Database className="h-4 w-4 mr-2" />
+                  Import CS Courses
+                </>
+              )}
             </Button>
 
             <div className="relative">
