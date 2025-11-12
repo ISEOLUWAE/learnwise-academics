@@ -1,0 +1,72 @@
+department,level,semester,session,course_code,course_title,units,status
+Computer Science,100,First,2024-2025,GST 111,Communication in English,2,Compulsory
+Computer Science,100,First,2024-2025,MTH 101,Elementary Mathematics I,2,Compulsory
+Computer Science,100,First,2024-2025,PHY 101,General Physics I,2,Compulsory
+Computer Science,100,First,2024-2025,PHY 107,General Practical Physics I,1,Compulsory
+Computer Science,100,First,2024-2025,STA 111,Descriptive Statistics,3,Compulsory
+Computer Science,100,First,2024-2025,COS 101,Introduction to Computing Sciences,3,Compulsory
+Computer Science,100,First,2024-2025,LAG-CSC 103,Fundamental of Programming,3,Compulsory
+Computer Science,100,First,2024-2025,LAG-CYB 105,Introduction to Data Analysis with Statistical Packages,2,Elective
+Computer Science,100,Second,2024-2025,GST 112,Nigerian Peoples and Culture,2,Compulsory
+Computer Science,100,Second,2024-2025,MTH 102,Elementary Mathematics II,2,Compulsory
+Computer Science,100,Second,2024-2025,PHY 102,General Physics II,2,Compulsory
+Computer Science,100,Second,2024-2025,PHY 108,General Practical Physics II,1,Compulsory
+Computer Science,100,Second,2024-2025,COS 102,Problem Solving,3,Compulsory
+Computer Science,100,Second,2024-2025,LAG-CSC 104,Introduction to Web Design and Development,3,Compulsory
+Computer Science,100,Second,2024-2025,LAG-CYB 106,Basic Theory and Principles of Computer Security,3,Elective
+Computer Science,100,Second,2024-2025,LAG-CSC 106,Introduction to Algorithms and Data Structures,3,Compulsory
+Computer Science,200,First,2024-2025,ENT 211,Entrepreneurship and Innovation,2,Compulsory
+Computer Science,200,First,2024-2025,MTH 201,Mathematical Methods I,2,Compulsory
+Computer Science,200,First,2024-2025,COS 201,Computer Programming I,3,Compulsory
+Computer Science,200,First,2024-2025,CSC 203,Discrete Structures,2,Compulsory
+Computer Science,200,First,2024-2025,IFT 211,Digital Logic Design,2,Compulsory
+Computer Science,200,First,2024-2025,SEN 201,Introduction to Software Engineering,2,Compulsory
+Computer Science,200,First,2024-2025,LAG-CSC 205,Introduction to Computational Methods,3,Compulsory
+Computer Science,200,First,2024-2025,DTS 201,Introduction to Data Science,2,Elective
+Computer Science,200,First,2024-2025,ICT 201,Introduction to Information and Communication technologies,2,Elective
+Computer Science,200,Second,2024-2025,GST 212,Philosophy Logic and Human Existence,2,Compulsory
+Computer Science,200,Second,2024-2025,MTH 202,Elementary Differential equations,2,Compulsory
+Computer Science,200,Second,2024-2025,COS 202,Computer Programming II,3,Compulsory
+Computer Science,200,Second,2024-2025,CSC 224,Introduction to Information Processing,3,Compulsory
+Computer Science,200,Second,2024-2025,INS 202,Human-Computer Interface,2,Elective
+Computer Science,200,Second,2024-2025,INS 204,Systems Analysis and design,3,Compulsory
+Computer Science,200,Second,2024-2025,DTS 204,Statistical Computing Inference and Modelling,3,Elective
+Computer Science,200,Second,2024-2025,LAG-CSC 210,Concurrent Programming,2,Elective
+Computer Science,300,First,2024-2025,CSC 301,Data Structures,3,Compulsory
+Computer Science,300,First,2024-2025,CSC 309,Artificial Intelligence,2,Compulsory
+Computer Science,300,First,2024-2025,CYB 201,Introduction to Cybersecurity and Strategy,2,Compulsory
+Computer Science,300,First,2024-2025,ICT 305,Data Communication System & Network,3,Compulsory
+Computer Science,300,First,2024-2025,LAG-CSC 315,Introduction to Machine and Assembly languages,3,Compulsory
+Computer Science,300,First,2024-2025,LAG-CSC 331,Real-Time Systems and Programming,3,Elective
+Computer Science,300,Second,2024-2025,GST 312,Peace and Conflict Resolution,2,Compulsory
+Computer Science,300,Second,2024-2025,ENT 312,Venture Creation,2,Compulsory
+Computer Science,300,Second,2024-2025,CSC 308,Operating Systems,3,Compulsory
+Computer Science,300,Second,2024-2025,CSC 322,Computer Science Innovation and New Technologies,2,Compulsory
+Computer Science,300,Second,2024-2025,DTS 304,Data Management I,3,Compulsory
+Computer Science,300,Second,2024-2025,LAG-ISR 302,Information and Knowledge Management,2,Elective
+Computer Science,300,Second,2024-2025,LAG-CSC 326,Introduction to Compiler Construction,3,Compulsory
+Computer Science,300,Second,2024-2025,LAG-CSC 328,Introduction to Theory of Computing,3,Compulsory
+Computer Science,400,First,2024-2025,COS 409,Research Methodology and Technical Report Writing,3,Compulsory
+Computer Science,400,First,2024-2025,CSC 401,Algorithms and Complexity Analysis,2,Compulsory
+Computer Science,400,First,2024-2025,INS 401,Project Management,2,Compulsory
+Computer Science,400,First,2024-2025,LAG-CSC 407,Entrepreneurship and Business development for Computer Scientists,2,Compulsory
+Computer Science,400,First,2024-2025,LAG-CSC 403,Numerical Computation,3,Elective
+Computer Science,400,First,2024-2025,LAG-CSC 405,Modelling And Simulation,3,Elective
+Computer Science,400,First,2024-2025,LAG-CSC 415,Advanced Operating Systems,3,Compulsory
+Computer Science,400,First,2024-2025,LAG-CSC 411,Advanced Data Structures,3,Compulsory
+Computer Science,400,First,2024-2025,LAG-CSC 413,System Performance Evaluation,3,Elective
+Computer Science,400,Second,2024-2025,CSC 498,SIWES,6,Compulsory
+Computer Science,500,First,2024-2025,CSC 597,Final Year Project I,6,Compulsory
+Computer Science,500,First,2024-2025,LAG-CSC513,Advanced Compiler Construction,3,Compulsory
+Computer Science,500,First,2024-2025,LAG-CSC515,Advanced Statistical Processing,3,Elective
+Computer Science,500,First,2024-2025,LAG-CSC517,Machine Learning,3,Compulsory
+Computer Science,500,First,2024-2025,LAG-CSC519,Computer Graphics and Animation,3,Elective
+Computer Science,500,First,2024-2025,LAG-CSC523,Computer Networks,3,Elective
+Computer Science,500,First,2024-2025,LAG-CSC525,Computer Architecture,3,Elective
+Computer Science,500,First,2024-2025,LAG-CSC527,Optimization Techniques,3,Elective
+Computer Science,500,First,2024-2025,LAG-CSC529,Introduction to Telemedicine and e-Health,3,Elective
+Computer Science,500,Second,2024-2025,CSC 598,Final Year Project II,3,Compulsory
+Computer Science,500,Second,2024-2025,CSC 402,Ethics and Legal Issues in Computer Science,2,Compulsory
+Computer Science,500,Second,2024-2025,LAG-CSC516,Further Numerical Computation,3,Elective
+Computer Science,500,Second,2024-2025,LAG-CSC518,Financial Software Projects,3,Compulsory
+Computer Science,500,Second,2024-2025,LAG-CSC522,Principle of Programming Language,3,Compulsory
