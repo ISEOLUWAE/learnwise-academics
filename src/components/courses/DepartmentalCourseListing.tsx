@@ -269,33 +269,33 @@ const DepartmentalCourseListing = () => {
         >
           {/* Results Header */}
           <Card className="bg-gradient-to-r from-primary/10 via-blue-500/10 to-purple-500/10 border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/20">
-                      <BookOpen className="h-6 w-6 text-primary" />
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-2 flex-1 min-w-0">
+                  <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-primary/20 flex-shrink-0">
+                      <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
-                    Course Listings
+                    <span className="truncate">Course Listings</span>
                   </h3>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <Badge variant="outline" className="text-xs">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                    <Badge variant="outline" className="text-xs whitespace-nowrap">
                       <GraduationCap className="h-3 w-3 mr-1" />
                       {selectedLevel} Level
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      <Users className="h-3 w-3 mr-1" />
-                      {selectedDepartment}
+                    <Badge variant="outline" className="text-xs max-w-full truncate">
+                      <Users className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{selectedDepartment}</span>
                     </Badge>
-                    <Badge className={getSemesterBadgeColor(selectedSemester)}>
+                    <Badge className={`${getSemesterBadgeColor(selectedSemester)} whitespace-nowrap`}>
                       <Calendar className="h-3 w-3 mr-1" />
                       {getSemesterDisplayName(selectedSemester)}
                     </Badge>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-primary">{courses.length}</div>
-                  <div className="text-sm text-muted-foreground">Courses Found</div>
+                <div className="text-center sm:text-right flex-shrink-0">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">{courses.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Courses Found</div>
                 </div>
               </div>
             </CardContent>
