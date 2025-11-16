@@ -29,6 +29,31 @@ const DepartmentalCourseListing = () => {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Set up real-time subscription for departmental courses
+  useEffect(() => {
+    if (!hasSearched) return;
+
+    const channel = supabase
+      .channel('departmental-courses-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'departmental_courses',
+          filter: `department=eq.${selectedDepartment}&level=eq.${selectedLevel}&semester=eq.${selectedSemester.toLowerCase()}`
+        },
+        () => {
+          handleSearch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [hasSearched, selectedDepartment, selectedLevel, selectedSemester]);
+
   // Available departments - you can expand this list
   const departments = [
     "Medicine and Surgery",

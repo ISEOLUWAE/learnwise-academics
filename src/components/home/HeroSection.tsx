@@ -16,7 +16,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 px-4"
           >
             Learn <span className="hero-text">Smarter</span>, <br />
             Achieve <span className="hero-text">More!</span>
@@ -26,7 +26,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+            className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4"
           >
             Unlock your potential with our comprehensive educational platform. Access quality courses, 
             calculate your GPA, find academic resources, and join a community of motivated learners.
@@ -36,16 +36,16 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12 px-4"
           >
-            <Button variant="hero" size="xl" className="group" asChild>
+            <Button variant="hero" size="xl" className="group w-full sm:w-auto" asChild>
               <Link to="/courses">
                 Get Started
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
-            <Button variant="outline_glow" size="xl" className="group">
-              <Play className="h-5 w-5 mr-2" />
+            <Button variant="outline_glow" size="xl" className="group w-full sm:w-auto">
+              <Play className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Watch Demo
             </Button>
           </motion.div>
@@ -55,28 +55,28 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-3xl mx-auto px-4"
           >
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-blue/10 rounded-lg mb-3">
-                <Users className="h-6 w-6 text-brand-blue" />
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-brand-blue/10 rounded-lg mb-2 sm:mb-3">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-brand-blue" />
               </div>
-              <div className="text-2xl font-bold text-brand-blue">10,000+</div>
-              <div className="text-muted-foreground">Active Students</div>
+              <div className="text-xl sm:text-2xl font-bold text-brand-blue">10,000+</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Active Students</div>
             </div>
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-green/10 rounded-lg mb-3">
-                <BookOpen className="h-6 w-6 text-brand-green" />
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-brand-green/10 rounded-lg mb-2 sm:mb-3">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-brand-green" />
               </div>
-              <div className="text-2xl font-bold text-brand-green">500+</div>
-              <div className="text-muted-foreground">Quality Courses</div>
+              <div className="text-xl sm:text-2xl font-bold text-brand-green">500+</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Quality Courses</div>
             </div>
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-purple/10 rounded-lg mb-3">
-                <Award className="h-6 w-6 text-brand-purple" />
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-brand-purple/10 rounded-lg mb-2 sm:mb-3">
+                <Award className="h-5 w-5 sm:h-6 sm:w-6 text-brand-purple" />
               </div>
-              <div className="text-2xl font-bold text-brand-purple">95%</div>
-              <div className="text-muted-foreground">Success Rate</div>
+              <div className="text-xl sm:text-2xl font-bold text-brand-purple">95%</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Success Rate</div>
             </div>
           </motion.div>
         </div>
