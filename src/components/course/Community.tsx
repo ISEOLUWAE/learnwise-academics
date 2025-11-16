@@ -107,10 +107,25 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
       let fileUrl = null;
       let fileName = null;
 
-      // Upload file if selected (you'll need to implement file upload to Supabase Storage)
+      // Upload file to Supabase Storage
       if (selectedFile) {
-        // For now, just store the file name - implement actual upload later
-        fileName = selectedFile.name;
+        const fileExt = selectedFile.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('community-files')
+          .upload(filePath, selectedFile);
+
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('community-files')
+            .getPublicUrl(filePath);
+          
+          fileUrl = publicUrl;
+          fileName = selectedFile.name;
+        }
       }
 
       const { data, error } = await supabase
@@ -217,6 +232,24 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('community_posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      fetchCommunityPosts();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date();
     const postTime = new Date(timestamp);
@@ -306,24 +339,34 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="p-4 rounded-lg bg-bg-primary/30 border border-white/5"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-blue/20 flex items-center justify-center text-sm font-semibold">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-blue/20 flex items-center justify-center text-xs sm:text-sm font-semibold flex-shrink-0">
                     {post.user_avatar}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-sm">{post.user_name}</h4>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
+                      <h4 className="font-semibold text-xs sm:text-sm">{post.user_name}</h4>
                       {post.is_admin_reply && (
                         <Badge variant="default" className="text-xs">
                           <Shield className="h-3 w-3 mr-1" />
                           Admin
                         </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {formatTimeAgo(post.created_at)}
                       </span>
+                      {user && post.user_id === user.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeletePost(post.id)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10 h-6 px-2 text-xs ml-auto"
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-sm leading-relaxed mb-3">{post.content}</p>
+                    <p className="text-xs sm:text-sm leading-relaxed mb-3 break-words">{post.content}</p>
                     
                     {post.file_url && post.file_name && (
                       <a 
@@ -331,28 +374,28 @@ const Community = ({ courseId, courseTitle }: CommunityProps) => {
                         download={post.file_name}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 mb-3 p-2 bg-bg-secondary/30 rounded-lg hover:bg-bg-secondary/50 transition-colors"
+                        className="flex items-center gap-2 mb-3 p-2 bg-bg-secondary/30 rounded-lg hover:bg-bg-secondary/50 transition-colors overflow-hidden"
                       >
-                        <FileText className="h-4 w-4" />
-                        <span className="text-sm">{post.file_name}</span>
-                        <span className="text-xs text-muted-foreground ml-auto">Click to download</span>
+                        <FileText className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm truncate flex-1">{post.file_name}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline whitespace-nowrap">Click to download</span>
                       </a>
                     )}
                     
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className={`h-8 px-2 ${post.user_liked ? 'text-red-400' : ''}`}
+                        className={`h-7 sm:h-8 px-2 text-xs sm:text-sm ${post.user_liked ? 'text-red-400' : ''}`}
                         onClick={() => handleLike(post.id)}
                       >
-                        <Heart className={`h-4 w-4 mr-1 ${post.user_liked ? 'fill-current' : ''}`} />
+                        <Heart className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.user_liked ? 'fill-current' : ''}`} />
                         {post.likes}
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 px-2"
+                        className="h-7 sm:h-8 px-2 text-xs sm:text-sm"
                         onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
                       >
                         <Reply className="h-4 w-4 mr-1" />

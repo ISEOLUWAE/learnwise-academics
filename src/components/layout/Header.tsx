@@ -42,12 +42,12 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`link-underline transition-colors duration-300 ${
+                className={`link-underline transition-colors duration-300 text-sm xl:text-base whitespace-nowrap ${
                   isActivePath(item.path)
                     ? "text-brand-blue"
                     : "text-foreground hover:text-brand-blue"
@@ -59,45 +59,46 @@ const Header = () => {
           </nav>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-2 xl:space-x-4">
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setIsGPAOpen(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 xl:gap-2 text-xs xl:text-sm whitespace-nowrap"
             >
-              <Calculator className="h-4 w-4" />
-              GPA Calculator
+              <Calculator className="h-3 w-3 xl:h-4 xl:w-4" />
+              <span className="hidden xl:inline">GPA Calculator</span>
+              <span className="xl:hidden">GPA</span>
             </Button>
             
             {user ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 xl:gap-2">
                 {isAdmin && (
                   <Link to="/admin">
-                    <Button variant="outline" size="sm" className="flex items-center gap-2">
-                      <Shield className="h-4 w-4" />
-                      Admin
+                    <Button variant="outline" size="sm" className="flex items-center gap-1 xl:gap-2 text-xs xl:text-sm">
+                      <Shield className="h-3 w-3 xl:h-4 xl:w-4" />
+                      <span className="hidden xl:inline">Admin</span>
                     </Button>
                   </Link>
                 )}
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  {user.email}
+                <span className="text-xs xl:text-sm text-muted-foreground flex items-center gap-1 max-w-[120px] xl:max-w-[180px] truncate">
+                  <User className="h-3 w-3 xl:h-4 xl:w-4 flex-shrink-0" />
+                  <span className="truncate">{user.email}</span>
                 </span>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={signOut}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1 xl:gap-2 text-xs xl:text-sm"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Logout
+                  <LogOut className="h-3 w-3 xl:h-4 xl:w-4" />
+                  <span className="hidden xl:inline">Logout</span>
                 </Button>
               </div>
             ) : (
               <Link to="/login">
-                <Button variant="gradient" size="sm" className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" />
+                <Button variant="gradient" size="sm" className="flex items-center gap-1 xl:gap-2 text-xs xl:text-sm">
+                  <LogIn className="h-3 w-3 xl:h-4 xl:w-4" />
                   Login
                 </Button>
               </Link>
