@@ -59,6 +59,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     });
+    
+    // Handle duplicate email error
+    if (error?.message?.includes('already registered') || 
+        error?.message?.includes('already exists') ||
+        error?.message?.includes('User already registered')) {
+      return { error: { message: 'This email is already registered. Please login instead.' } };
+    }
+    
     return { error };
   };
 
