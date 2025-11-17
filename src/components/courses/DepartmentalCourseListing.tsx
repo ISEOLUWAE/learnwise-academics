@@ -92,16 +92,19 @@ const DepartmentalCourseListing = () => {
     setHasSearched(true);
 
     try {
-      // Handle semester variations: "1st Semester" matches "1st semester", "1st", etc.
-      // "2nd Semester" matches "2nd semester", "Second", "second", etc.
-      const semesterPattern = selectedSemester === "1st Semester" ? "1" : "2";
+      // Database has mixed semester formats: "First", "Second", "1st semester", "2nd semester"
+      // Need to search for both patterns
+      const isFirstSemester = selectedSemester === "1st Semester";
       
       const { data, error } = await supabase
         .from('departmental_courses')
         .select('*')
         .eq('department', selectedDepartment)
         .eq('level', selectedLevel)
-        .ilike('semester', `%${semesterPattern}%`)
+        .or(isFirstSemester 
+          ? 'semester.ilike.%First%,semester.ilike.%1st%'
+          : 'semester.ilike.%Second%,semester.ilike.%2nd%'
+        )
         .order('course_code', { ascending: true });
 
       if (error) throw error;
