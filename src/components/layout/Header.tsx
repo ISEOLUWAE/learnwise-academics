@@ -20,7 +20,7 @@ const Header = () => {
     { name: "Courses", path: "/courses" },
     { name: "News", path: "/news" },
     { name: "Scholarships", path: "/scholarships" },
-    ...(user ? [{ name: "Friends", path: "/friends" }] : []),
+    ...(user ? [{ name: "Department", path: "/department" }] : []),
     { name: "Contact", path: "/contact" },
   ];
 

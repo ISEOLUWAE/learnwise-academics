@@ -1,1 +1,16 @@
 project_id = "cgfiwjbegervslftrvaz"
+
+[functions.get-users-with-emails]
+verify_jwt = true
+
+[functions.import-cs-courses]
+verify_jwt = true
+
+[functions.manage-admin-users]
+verify_jwt = true
+
+[functions.department-space]
+verify_jwt = false
+
+[functions.trigger-urgent-call]
+verify_jwt = false
