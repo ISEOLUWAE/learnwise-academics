@@ -211,6 +211,206 @@ export type Database = {
         }
         Relationships: []
       }
+      department_announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          department_space_id: string
+          id: string
+          is_urgent: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          department_space_id: string
+          id?: string
+          is_urgent?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          department_space_id?: string
+          id?: string
+          is_urgent?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_announcements_department_space_id_fkey"
+            columns: ["department_space_id"]
+            isOneToOne: false
+            referencedRelation: "department_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_members: {
+        Row: {
+          department_space_id: string
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["department_role"]
+          user_id: string
+        }
+        Insert: {
+          department_space_id: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["department_role"]
+          user_id: string
+        }
+        Update: {
+          department_space_id?: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["department_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_members_department_space_id_fkey"
+            columns: ["department_space_id"]
+            isOneToOne: false
+            referencedRelation: "department_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_spaces: {
+        Row: {
+          code_hash: string
+          created_at: string
+          created_by: string | null
+          department: string
+          display_tag: string
+          id: string
+          level: string
+          school: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          created_by?: string | null
+          department: string
+          display_tag: string
+          id?: string
+          level: string
+          school: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          display_tag?: string
+          id?: string
+          level?: string
+          school?: string
+        }
+        Relationships: []
+      }
+      department_timetables: {
+        Row: {
+          course_code: string
+          course_title: string
+          created_at: string
+          created_by: string
+          day_of_week: string
+          department_space_id: string
+          end_time: string
+          id: string
+          lecturer: string | null
+          start_time: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          course_code: string
+          course_title: string
+          created_at?: string
+          created_by: string
+          day_of_week: string
+          department_space_id: string
+          end_time: string
+          id?: string
+          lecturer?: string | null
+          start_time: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          course_code?: string
+          course_title?: string
+          created_at?: string
+          created_by?: string
+          day_of_week?: string
+          department_space_id?: string
+          end_time?: string
+          id?: string
+          lecturer?: string | null
+          start_time?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_timetables_department_space_id_fkey"
+            columns: ["department_space_id"]
+            isOneToOne: false
+            referencedRelation: "department_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_votes: {
+        Row: {
+          created_at: string
+          created_by: string
+          department_space_id: string
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          started_at: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          department_space_id: string
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          started_at?: string | null
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          department_space_id?: string
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          started_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_votes_department_space_id_fkey"
+            columns: ["department_space_id"]
+            isOneToOne: false
+            referencedRelation: "department_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departmental_courses: {
         Row: {
           course_code: string
@@ -728,11 +928,87 @@ export type Database = {
         }
         Relationships: []
       }
+      user_votes: {
+        Row: {
+          id: string
+          user_id: string
+          vote_id: string
+          voted_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          vote_id: string
+          voted_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          vote_id?: string
+          voted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_votes_vote_id_fkey"
+            columns: ["vote_id"]
+            isOneToOne: false
+            referencedRelation: "department_votes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vote_candidates: {
+        Row: {
+          created_at: string
+          id: string
+          manifesto: string | null
+          user_id: string
+          vote_count: number
+          vote_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manifesto?: string | null
+          user_id: string
+          vote_count?: number
+          vote_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manifesto?: string | null
+          user_id?: string
+          vote_count?: number
+          vote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vote_candidates_vote_id_fkey"
+            columns: ["vote_id"]
+            isOneToOne: false
+            referencedRelation: "department_votes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_manage_department: {
+        Args: { _department_space_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_department_role: {
+        Args: {
+          _department_space_id: string
+          _role: Database["public"]["Enums"]["department_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -741,9 +1017,14 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_department_member: {
+        Args: { _department_space_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "head_admin" | "admin" | "user"
+      department_role: "student" | "class_rep" | "dept_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -872,6 +1153,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["head_admin", "admin", "user"],
+      department_role: ["student", "class_rep", "dept_admin"],
     },
   },
 } as const
