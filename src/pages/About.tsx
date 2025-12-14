@@ -43,7 +43,7 @@ const About = () => {
               className="text-center max-w-4xl mx-auto"
             >
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                About <span className="hero-text">AcadBridge</span>
+                About <span className="hero-text">Lumora</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8">
                 Empowering the next generation of learners through innovative educational technology
@@ -210,7 +210,7 @@ const About = () => {
                 Ready to Start Your Learning Journey?
               </h2>
               <p className="text-lg mb-8 max-w-2xl mx-auto opacity-90">
-                Join thousands of students who are already achieving their academic goals with AcadBridge
+                Join thousands of students who are already achieving their academic goals with Lumora
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}

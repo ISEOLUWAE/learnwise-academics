@@ -92,7 +92,7 @@ const Login = () => {
               <div className="text-center mb-8">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-brand-blue" />
                 <h1 className="text-3xl font-bold mb-2">
-                  <span className="hero-text">Welcome to AcadBridge</span>
+                  <span className="hero-text">Welcome to Lumora</span>
                 </h1>
                 <p className="text-muted-foreground">
                   Access your courses and study materials

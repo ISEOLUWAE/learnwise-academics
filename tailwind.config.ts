@@ -57,7 +57,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // AcadBridge Brand Colors
+        // Lumora Brand Colors
         brand: {
           blue: "hsl(var(--brand-blue))",
           green: "hsl(var(--brand-green))",

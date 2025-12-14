@@ -39,7 +39,7 @@ const Header = () => {
             <div className="bg-gradient-primary p-2 rounded-lg">
               <BookOpen className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold hero-text">AcadBridge</span>
+            <span className="text-xl font-bold hero-text">Lumora</span>
           </Link>
 
           {/* Desktop Navigation */}

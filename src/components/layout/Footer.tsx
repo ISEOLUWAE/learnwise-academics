@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="bg-gradient-primary p-1.5 sm:p-2 rounded-lg">
                 <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <span className="text-lg sm:text-xl font-bold hero-text">AcadBridge</span>
+              <span className="text-lg sm:text-xl font-bold hero-text">Lumora</span>
             </div>
             <p className="text-sm sm:text-base text-muted-foreground">
               Empowering students with quality education and innovative learning tools to achieve academic excellence.
@@ -77,7 +77,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-start space-x-2 text-muted-foreground text-sm sm:text-base">
                 <Mail className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span className="break-all">info@AcadBridge.edu</span>
+                <span className="break-all">info@Lumora.edu</span>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground text-sm sm:text-base">
                 <Phone className="h-4 w-4 flex-shrink-0" />
@@ -92,7 +92,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/10 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-muted-foreground">
-          <p className="text-xs sm:text-sm">&copy; 2024 AcadBridge. All rights reserved. | Built with passion for education.</p>
+          <p className="text-xs sm:text-sm">&copy; 2024 Lumora. All rights reserved. | Built with passion for education.</p>
         </div>
       </div>
     </footer>
