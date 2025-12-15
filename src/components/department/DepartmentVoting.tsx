@@ -152,6 +152,35 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps
         updateData.ended_at = null;
       } else {
         updateData.ended_at = new Date().toISOString();
+        
+        // When closing voting, promote the winner to class_rep
+        if (candidates.length > 0 && candidates[0].vote_count > 0) {
+          const winner = candidates[0];
+          
+          // Call edge function to promote winner
+          const response = await fetch(
+            `https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/department-space`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${session?.access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                action: 'promote_class_rep',
+                voteId: sessionId,
+                winnerId: winner.user_id,
+                spaceId
+              }),
+            }
+          );
+          
+          if (response.ok) {
+            toast({ 
+              title: `${winner.profiles?.full_name || winner.profiles?.username || 'Winner'} is now Class Representative!` 
+            });
+          }
+        }
       }
 
       const { error } = await supabase

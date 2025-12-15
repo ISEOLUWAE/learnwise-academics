@@ -72,7 +72,7 @@ serve(async (req) => {
       );
     }
 
-    // Get all department members with their phone numbers from profiles
+    // Get all department members
     const { data: members, error: membersError } = await supabaseClient
       .from('department_members')
       .select('user_id')
@@ -85,28 +85,43 @@ serve(async (req) => {
       );
     }
 
-    // Get phone numbers from auth.users (if available)
     const userIds = members.map(m => m.user_id);
-    const { data: { users }, error: usersError } = await supabaseClient.auth.admin.listUsers();
 
-    if (usersError) {
-      console.error('Error fetching users:', usersError);
+    // Get phone numbers from profiles table
+    const { data: profiles, error: profilesError } = await supabaseClient
+      .from('profiles')
+      .select('id, phone_number, full_name, username')
+      .in('id', userIds)
+      .not('phone_number', 'is', null);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch member details' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const membersWithPhones = users
-      .filter(u => userIds.includes(u.id) && u.phone)
-      .map(u => ({ id: u.id, phone: u.phone }));
+    const membersWithPhones = profiles?.filter(p => p.phone_number && p.phone_number.trim() !== '') || [];
 
     if (membersWithPhones.length === 0) {
+      // Still create announcement even if no calls can be made
+      await supabaseClient
+        .from('department_announcements')
+        .insert({
+          department_space_id: departmentSpaceId,
+          title: 'URGENT NOTIFICATION',
+          content: message,
+          is_urgent: true,
+          created_by: user.id
+        });
+
       return new Response(
         JSON.stringify({ 
           success: false, 
           message: 'No members have registered phone numbers. Announcement was posted instead.',
-          callsSent: 0
+          callsSent: 0,
+          announcementCreated: true
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -119,7 +134,16 @@ serve(async (req) => {
 
     for (const member of membersWithPhones) {
       try {
-        const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${message}</Say></Response>`;
+        // Format phone number
+        let phoneNumber = member.phone_number!.trim();
+        if (!phoneNumber.startsWith('+')) {
+          // Assume Nigerian number if no country code
+          phoneNumber = phoneNumber.startsWith('0') 
+            ? '+234' + phoneNumber.slice(1) 
+            : '+234' + phoneNumber;
+        }
+
+        const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${message}. I repeat: ${message}</Say></Response>`;
         
         const response = await fetch(twilioBaseUrl, {
           method: 'POST',
@@ -128,18 +152,19 @@ serve(async (req) => {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: new URLSearchParams({
-            To: member.phone!,
+            To: phoneNumber,
             From: twilioPhoneNumber,
             Twiml: twimlMessage,
           }),
         });
 
         if (response.ok) {
-          callResults.push({ userId: member.id, status: 'success' });
+          callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'success' });
+          console.log(`Call initiated for ${member.full_name || member.username}`);
         } else {
           const errorText = await response.text();
           console.error(`Failed to call ${member.id}:`, errorText);
-          callResults.push({ userId: member.id, status: 'failed' });
+          callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'failed', error: errorText });
         }
       } catch (callError) {
         console.error(`Error calling ${member.id}:`, callError);
@@ -163,9 +188,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Urgent calls triggered for ${successCount} members`,
+        message: `Urgent calls triggered for ${successCount} of ${membersWithPhones.length} members with phone numbers`,
         callsSent: successCount,
-        totalMembers: membersWithPhones.length
+        totalMembers: members.length,
+        membersWithPhones: membersWithPhones.length,
+        callResults
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

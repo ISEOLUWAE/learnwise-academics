@@ -4,9 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Crown, Shield, UserCircle, Loader2 } from 'lucide-react';
+import { Users, Crown, Shield, UserCircle, Loader2, Phone, PhoneCall, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Member {
@@ -15,25 +19,49 @@ interface Member {
   role: 'student' | 'class_rep' | 'dept_admin';
   joined_at: string;
   profiles?: {
-    full_name: string;
-    username: string;
+    full_name: string | null;
+    username: string | null;
     avatar_url: string | null;
+    phone_number: string | null;
   };
 }
 
 interface DepartmentMembersProps {
   spaceId: string;
   isDeptAdmin: boolean;
+  isClassRep?: boolean;
 }
 
-export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersProps) => {
+export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: DepartmentMembersProps) => {
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [savingPhone, setSavingPhone] = useState(false);
+  const [showUrgentCallModal, setShowUrgentCallModal] = useState(false);
+  const [urgentMessage, setUrgentMessage] = useState('');
+  const [sendingCall, setSendingCall] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ phone_number: string | null } | null>(null);
 
   useEffect(() => {
     fetchMembers();
-  }, [spaceId]);
+    fetchUserProfile();
+  }, [spaceId, user?.id]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('phone_number')
+      .eq('id', user.id)
+      .single();
+    setUserProfile(data);
+    if (data?.phone_number) {
+      setPhoneNumber(data.phone_number);
+    }
+  };
 
   const fetchMembers = async () => {
     try {
@@ -50,7 +78,7 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
         (data || []).map(async (member) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('full_name, username, avatar_url')
+            .select('full_name, username, avatar_url, phone_number')
             .eq('id', member.user_id)
             .single();
           return { ...member, profiles: profile };
@@ -66,18 +94,109 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
   };
 
   const updateMemberRole = async (memberId: string, newRole: 'student' | 'class_rep' | 'dept_admin') => {
+    if (!session) return;
+    
     try {
-      const { error } = await supabase
-        .from('department_members')
-        .update({ role: newRole })
-        .eq('id', memberId);
+      const response = await fetch(
+        `https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/department-space`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            action: 'update_member_role',
+            memberId,
+            newRole,
+            spaceId
+          }),
+        }
+      );
 
-      if (error) throw error;
-      toast({ title: 'Role updated!' });
-      fetchMembers();
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({ title: 'Role updated!' });
+        fetchMembers();
+      } else {
+        toast({ title: data.error || 'Failed to update role', variant: 'destructive' });
+      }
     } catch (error) {
       console.error('Error updating role:', error);
       toast({ title: 'Failed to update role', variant: 'destructive' });
+    }
+  };
+
+  const savePhoneNumber = async () => {
+    if (!user || !phoneNumber.trim()) return;
+    
+    setSavingPhone(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ phone_number: phoneNumber.trim() })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      toast({ title: 'Phone number saved!' });
+      setShowPhoneModal(false);
+      fetchUserProfile();
+      fetchMembers();
+    } catch (error) {
+      console.error('Error saving phone:', error);
+      toast({ title: 'Failed to save phone number', variant: 'destructive' });
+    } finally {
+      setSavingPhone(false);
+    }
+  };
+
+  const triggerUrgentCall = async () => {
+    if (!session || !urgentMessage.trim()) return;
+    
+    setSendingCall(true);
+    try {
+      const response = await fetch(
+        `https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/trigger-urgent-call`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            departmentSpaceId: spaceId,
+            message: urgentMessage.trim()
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({ 
+          title: 'Urgent calls triggered!',
+          description: data.message
+        });
+        setShowUrgentCallModal(false);
+        setUrgentMessage('');
+      } else {
+        toast({ 
+          title: 'Call notification sent',
+          description: data.message || data.error,
+          variant: data.announcementCreated ? 'default' : 'destructive'
+        });
+        if (data.announcementCreated) {
+          setShowUrgentCallModal(false);
+          setUrgentMessage('');
+        }
+      }
+    } catch (error) {
+      console.error('Error triggering calls:', error);
+      toast({ title: 'Failed to trigger calls', variant: 'destructive' });
+    } finally {
+      setSendingCall(false);
     }
   };
 
@@ -107,8 +226,19 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
     }
   };
 
-  const getInitials = (name: string | undefined) => {
-    if (!name) return '?';
+  const getDisplayName = (member: Member) => {
+    if (member.profiles?.full_name && member.profiles.full_name.trim()) {
+      return member.profiles.full_name;
+    }
+    if (member.profiles?.username && member.profiles.username.trim()) {
+      return member.profiles.username;
+    }
+    return 'Student';
+  };
+
+  const getInitials = (member: Member) => {
+    const name = getDisplayName(member);
+    if (name === 'Student') return 'S';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -116,6 +246,8 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const canManageRoles = isDeptAdmin || isClassRep;
 
   if (loading) {
     return (
@@ -128,9 +260,44 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
   const admins = members.filter((m) => m.role === 'dept_admin');
   const classReps = members.filter((m) => m.role === 'class_rep');
   const students = members.filter((m) => m.role === 'student');
+  const membersWithPhones = members.filter(m => m.profiles?.phone_number);
 
   return (
     <div className="space-y-6">
+      {/* Phone Number & Urgent Call Actions */}
+      <Card className="bg-bg-secondary/50 border-white/10">
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowPhoneModal(true)}
+              className="gap-2"
+            >
+              <Phone className="h-4 w-4" />
+              {userProfile?.phone_number ? 'Update Phone Number' : 'Add Phone Number'}
+            </Button>
+            
+            {(isClassRep || isDeptAdmin) && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowUrgentCallModal(true)}
+                className="gap-2"
+              >
+                <PhoneCall className="h-4 w-4" />
+                Trigger Urgent Call ({membersWithPhones.length} reachable)
+              </Button>
+            )}
+          </div>
+          
+          {!userProfile?.phone_number && (
+            <p className="text-sm text-muted-foreground mt-3">
+              <AlertTriangle className="h-4 w-4 inline mr-1 text-amber-400" />
+              Add your phone number to receive urgent voice call notifications from your class rep.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="bg-bg-secondary/50 border-white/10">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -148,9 +315,12 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
                   <MemberRow
                     key={member.id}
                     member={member}
-                    isDeptAdmin={isDeptAdmin}
+                    canManageRoles={canManageRoles}
+                    isClassRep={isClassRep}
+                    currentUserId={user?.id}
                     onRoleChange={updateMemberRole}
                     getRoleBadge={getRoleBadge}
+                    getDisplayName={getDisplayName}
                     getInitials={getInitials}
                   />
                 ))}
@@ -167,9 +337,12 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
                   <MemberRow
                     key={member.id}
                     member={member}
-                    isDeptAdmin={isDeptAdmin}
+                    canManageRoles={canManageRoles}
+                    isClassRep={isClassRep}
+                    currentUserId={user?.id}
                     onRoleChange={updateMemberRole}
                     getRoleBadge={getRoleBadge}
+                    getDisplayName={getDisplayName}
                     getInitials={getInitials}
                   />
                 ))}
@@ -186,9 +359,12 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
                   <MemberRow
                     key={member.id}
                     member={member}
-                    isDeptAdmin={isDeptAdmin}
+                    canManageRoles={canManageRoles}
+                    isClassRep={isClassRep}
+                    currentUserId={user?.id}
                     onRoleChange={updateMemberRole}
                     getRoleBadge={getRoleBadge}
+                    getDisplayName={getDisplayName}
                     getInitials={getInitials}
                   />
                 ))}
@@ -201,39 +377,144 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin }: DepartmentMembersPro
           )}
         </CardContent>
       </Card>
+
+      {/* Phone Number Modal */}
+      <Dialog open={showPhoneModal} onOpenChange={setShowPhoneModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              Your Phone Number
+            </DialogTitle>
+            <DialogDescription>
+              Add your phone number to receive urgent voice call notifications from your class representative.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              type="tel"
+              placeholder="e.g., 08012345678 or +2348012345678"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Your number will only be used for urgent class notifications.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowPhoneModal(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={savePhoneNumber} disabled={savingPhone || !phoneNumber.trim()} className="flex-1">
+                {savingPhone ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Urgent Call Modal */}
+      <Dialog open={showUrgentCallModal} onOpenChange={setShowUrgentCallModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <PhoneCall className="h-5 w-5" />
+              Trigger Urgent Voice Call
+            </DialogTitle>
+            <DialogDescription>
+              This will call all department members ({membersWithPhones.length} with phone numbers) with an automated voice message. Use only for urgent announcements!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Enter your urgent message (e.g., 'Class has been moved to Room 101. Please come immediately.')"
+              value={urgentMessage}
+              onChange={(e) => setUrgentMessage(e.target.value)}
+              rows={4}
+            />
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowUrgentCallModal(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={triggerUrgentCall} 
+                disabled={sendingCall || !urgentMessage.trim()} 
+                className="flex-1"
+              >
+                {sendingCall ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Calling...
+                  </>
+                ) : (
+                  <>
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    Call Everyone
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 interface MemberRowProps {
   member: Member;
-  isDeptAdmin: boolean;
+  canManageRoles: boolean;
+  isClassRep?: boolean;
+  currentUserId?: string;
   onRoleChange: (memberId: string, newRole: 'student' | 'class_rep' | 'dept_admin') => void;
   getRoleBadge: (role: string) => React.ReactNode;
-  getInitials: (name: string | undefined) => string;
+  getDisplayName: (member: Member) => string;
+  getInitials: (member: Member) => string;
 }
 
-const MemberRow = ({ member, isDeptAdmin, onRoleChange, getRoleBadge, getInitials }: MemberRowProps) => {
+const MemberRow = ({ 
+  member, 
+  canManageRoles, 
+  isClassRep, 
+  currentUserId,
+  onRoleChange, 
+  getRoleBadge, 
+  getDisplayName,
+  getInitials 
+}: MemberRowProps) => {
+  // Class rep can change anyone's role (including demoting admins)
+  // Dept admin cannot change class rep's role
+  const canEditThisMember = canManageRoles && (
+    isClassRep || // Class rep can edit anyone
+    (member.role !== 'class_rep') // Dept admin can't edit class rep
+  );
+  
+  // Don't allow changing your own role
+  const isSelf = member.user_id === currentUserId;
+
   return (
     <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
           <AvatarImage src={member.profiles?.avatar_url || undefined} />
           <AvatarFallback className="bg-brand-blue/20 text-brand-blue">
-            {getInitials(member.profiles?.full_name || member.profiles?.username)}
+            {getInitials(member)}
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-medium">
-            {member.profiles?.full_name || member.profiles?.username || 'Unknown User'}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium">{getDisplayName(member)}</p>
+            {member.profiles?.phone_number && (
+              <Phone className="h-3 w-3 text-green-400" />
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             Joined {format(new Date(member.joined_at), 'PP')}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {isDeptAdmin ? (
+        {canEditThisMember && !isSelf ? (
           <Select
             value={member.role}
             onValueChange={(value) => onRoleChange(member.id, value as any)}

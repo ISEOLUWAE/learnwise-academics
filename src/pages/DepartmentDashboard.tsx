@@ -39,6 +39,8 @@ const DepartmentDashboard = () => {
     isDeptAdmin
   } = useDepartmentSpace();
   
+  const isClassRep = currentRole === 'class_rep';
+  
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   useEffect(() => {
@@ -191,28 +193,7 @@ const DepartmentDashboard = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {memberships.length > 1 && (
-                    <select
-                      value={currentSpace?.id}
-                      onChange={(e) => {
-                        const space = memberships.find(m => m.id === e.target.value);
-                        if (space) setCurrentSpace(space);
-                      }}
-                      className="bg-bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm"
-                    >
-                      {memberships.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.department_spaces.display_tag}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <Button variant="outline" onClick={() => setShowJoinModal(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Join Another
-                  </Button>
-                </div>
+                {/* Users can only be in one department, so no switcher needed */}
               </div>
 
               {/* Main Content */}
@@ -268,6 +249,7 @@ const DepartmentDashboard = () => {
                     <DepartmentMembers 
                       spaceId={currentSpace.department_spaces.id}
                       isDeptAdmin={isDeptAdmin}
+                      isClassRep={isClassRep}
                     />
                   )}
                 </TabsContent>

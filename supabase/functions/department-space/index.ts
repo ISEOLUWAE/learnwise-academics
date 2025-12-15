@@ -46,9 +46,12 @@ serve(async (req) => {
       );
     }
 
-    const { action, school, department, level, code } = await req.json();
+    const body = await req.json();
+    const { action } = body;
 
     if (action === 'create_or_join') {
+      const { school, department, level, code } = body;
+      
       // Validate inputs
       if (!school || !department || !level || !code) {
         return new Response(
@@ -57,9 +60,30 @@ serve(async (req) => {
         );
       }
 
-      // Rate limiting check - max 5 attempts per minute
-      const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
-      // Note: In production, implement proper rate limiting with Redis or similar
+      // Check if user is already in ANY department space
+      const { data: existingMembership, error: membershipError } = await supabaseClient
+        .from('department_members')
+        .select('id, department_spaces(display_tag)')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (membershipError) {
+        console.error('Error checking membership:', membershipError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to check membership status' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (existingMembership && existingMembership.length > 0) {
+        const currentSpace = existingMembership[0].department_spaces as any;
+        return new Response(
+          JSON.stringify({ 
+            error: `You are already a member of ${currentSpace?.display_tag || 'a department'}. You can only join one department space.` 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       const codeHash = await hashCode(code);
       const displayTag = `${school} ${department} ${level}`;
@@ -87,26 +111,6 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({ error: 'Invalid department code. Please check with your classmates.' }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // Check if user is already a member
-        const { data: existingMember } = await supabaseClient
-          .from('department_members')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('department_space_id', existingSpace.id)
-          .single();
-
-        if (existingMember) {
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: 'You are already a member of this department space',
-              spaceId: existingSpace.id,
-              isNew: false
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -211,6 +215,106 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ spaces: memberships }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (action === 'update_member_role') {
+      const { memberId, newRole, targetUserId, spaceId } = body;
+      
+      if (!memberId || !newRole || !spaceId) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Check if current user is class_rep or dept_admin
+      const { data: currentMember } = await supabaseClient
+        .from('department_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('department_space_id', spaceId)
+        .single();
+
+      if (!currentMember || !['class_rep', 'dept_admin'].includes(currentMember.role)) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized to manage roles' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Class rep has higher authority than dept_admin
+      // Class rep can demote/remove dept_admin
+      const { data: targetMember } = await supabaseClient
+        .from('department_members')
+        .select('role')
+        .eq('id', memberId)
+        .single();
+
+      if (!targetMember) {
+        return new Response(
+          JSON.stringify({ error: 'Member not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Dept admin cannot modify class_rep role
+      if (currentMember.role === 'dept_admin' && targetMember.role === 'class_rep') {
+        return new Response(
+          JSON.stringify({ error: 'Admins cannot modify class representative roles' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Class rep can modify anyone's role
+      const { error: updateError } = await supabaseClient
+        .from('department_members')
+        .update({ role: newRole })
+        .eq('id', memberId);
+
+      if (updateError) {
+        console.error('Error updating role:', updateError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to update role' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Role updated successfully' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (action === 'promote_class_rep') {
+      // Called after voting ends to promote winner to class_rep
+      const { voteId, winnerId, spaceId } = body;
+      
+      // First, demote any existing class_rep to student
+      await supabaseClient
+        .from('department_members')
+        .update({ role: 'student' })
+        .eq('department_space_id', spaceId)
+        .eq('role', 'class_rep');
+
+      // Promote the winner
+      const { error } = await supabaseClient
+        .from('department_members')
+        .update({ role: 'class_rep' })
+        .eq('user_id', winnerId)
+        .eq('department_space_id', spaceId);
+
+      if (error) {
+        console.error('Error promoting class rep:', error);
+        return new Response(
+          JSON.stringify({ error: 'Failed to promote class representative' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Class representative promoted' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
