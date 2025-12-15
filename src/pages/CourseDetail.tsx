@@ -17,12 +17,14 @@ import {
   MessageCircle,
   Clock,
   GraduationCap,
-  Play
+  Play,
+  Bot
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
 import QuizHistory from "@/components/quiz/QuizHistory";
 import Leaderboard from "@/components/course/Leaderboard";
 import Community from "@/components/course/Community";
+import AIAssistant from "@/components/course/AIAssistant";
 import { supabase } from "@/integrations/supabase/client";
 import { AdViewerModal } from "@/components/ads/AdViewerModal";
 import { useAdVerification } from "@/hooks/useAdVerification";
@@ -361,6 +363,13 @@ const CourseDetail = () => {
                   >
                     Community
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="ai-assistant" 
+                    className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                  >
+                    <Bot className="h-3 w-3 mr-1" />
+                    AI
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -498,6 +507,10 @@ const CourseDetail = () => {
 
                 <TabsContent value="community" className="space-y-6">
                   <Community courseId={course.id} courseTitle={course.title} />
+                </TabsContent>
+
+                <TabsContent value="ai-assistant" className="space-y-6">
+                  <AIAssistant courseCode={course.code} courseTitle={course.title} />
                 </TabsContent>
               </Tabs>
             </div>
