@@ -9,18 +9,23 @@ import {
   Bot, 
   Send, 
   Sparkles, 
-  BookOpen, 
   FileQuestion,
   Loader2,
   User,
   Lightbulb,
-  GraduationCap
+  GraduationCap,
+  Upload,
+  Image as ImageIcon,
+  X,
+  FileText,
+  Camera
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  attachments?: { type: string; name: string; preview?: string }[];
 }
 
 interface AIAssistantProps {
@@ -34,7 +39,10 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<{ file: File; preview?: string; base64?: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -42,16 +50,117 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
     }
   }, [messages]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: { file: File; preview?: string; base64?: string }[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`File ${file.name} is too large. Max 10MB.`);
+        continue;
+      }
+
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`File type ${file.type} not supported. Use images or PDF.`);
+        continue;
+      }
+
+      // Create preview for images
+      let preview: string | undefined;
+      let base64: string | undefined;
+
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+        
+        // Convert to base64
+        const reader = new FileReader();
+        base64 = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+      } else if (file.type === 'application/pdf') {
+        // For PDF, we'll send the base64
+        const reader = new FileReader();
+        base64 = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      newFiles.push({ file, preview, base64 });
+    }
+
+    setAttachedFiles(prev => [...prev, ...newFiles]);
+    
+    // Reset input
+    if (e.target) e.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => {
+      const newFiles = [...prev];
+      if (newFiles[index].preview) {
+        URL.revokeObjectURL(newFiles[index].preview!);
+      }
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
+
   const streamChat = async (userMessage: string, action?: string) => {
     setIsLoading(true);
     
-    const userMsg: Message = { role: "user", content: userMessage };
+    // Build message content with attachments
+    const attachments = attachedFiles.map(f => ({
+      type: f.file.type,
+      name: f.file.name,
+      preview: f.preview
+    }));
+
+    const userMsg: Message = { 
+      role: "user", 
+      content: userMessage,
+      attachments: attachments.length > 0 ? attachments : undefined
+    };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
 
     let assistantContent = "";
 
     try {
+      // Build the content array for multimodal
+      const contentParts: any[] = [{ type: "text", text: userMessage }];
+      
+      // Add files as base64 images or document references
+      for (const attachedFile of attachedFiles) {
+        if (attachedFile.base64) {
+          if (attachedFile.file.type.startsWith('image/')) {
+            contentParts.push({
+              type: "image_url",
+              image_url: {
+                url: attachedFile.base64
+              }
+            });
+          } else if (attachedFile.file.type === 'application/pdf') {
+            // For PDFs, we inform the AI about the document
+            contentParts[0].text = `[User uploaded a PDF document: "${attachedFile.file.name}"]\n\nNote: I cannot directly read PDF files, but if you can describe what's in it or copy-paste the text, I can help analyze it.\n\n${userMessage}`;
+          }
+        }
+      }
+
+      // Build the message for the API
+      const apiMessages = [...messages, { 
+        role: "user" as const, 
+        content: attachedFiles.some(f => f.file.type.startsWith('image/')) ? contentParts : userMessage 
+      }];
+
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -59,11 +168,18 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMsg],
+          messages: apiMessages,
           courseContext: { code: courseCode, title: courseTitle },
           action,
+          hasAttachments: attachedFiles.length > 0,
         }),
       });
+
+      // Clear attached files after sending
+      attachedFiles.forEach(f => {
+        if (f.preview) URL.revokeObjectURL(f.preview);
+      });
+      setAttachedFiles([]);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -120,14 +236,15 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
       toast.error(error instanceof Error ? error.message : "Failed to get AI response");
       // Remove the user message if there was an error
       setMessages(prev => prev.slice(0, -1));
+      // Restore attached files on error
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
-    streamChat(input.trim());
+    if ((!input.trim() && attachedFiles.length === 0) || isLoading) return;
+    streamChat(input.trim() || "Please analyze the attached file(s).");
   };
 
   const handleQuickAction = (action: string, prompt: string) => {
@@ -186,9 +303,19 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
               <div className="text-center py-12">
                 <Sparkles className="h-12 w-12 text-brand-blue/50 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Ask me anything about {courseTitle}</h3>
-                <p className="text-sm text-muted-foreground">
-                  I can explain concepts, generate quizzes, and help you prepare for exams.
+                <p className="text-sm text-muted-foreground mb-4">
+                  I can explain concepts, generate quizzes, analyze images/documents, and help you prepare for exams.
                 </p>
+                <div className="flex justify-center gap-2">
+                  <Badge variant="outline" className="gap-1">
+                    <ImageIcon className="h-3 w-3" />
+                    Upload Images
+                  </Badge>
+                  <Badge variant="outline" className="gap-1">
+                    <FileText className="h-3 w-3" />
+                    Analyze Documents
+                  </Badge>
+                </div>
               </div>
             )}
 
@@ -213,6 +340,25 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
                         : "bg-bg-tertiary border border-white/10"
                     }`}
                   >
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {msg.attachments.map((att, i) => (
+                          <div key={i} className="relative">
+                            {att.type.startsWith('image/') && att.preview ? (
+                              <img 
+                                src={att.preview} 
+                                alt={att.name} 
+                                className="h-16 w-16 object-cover rounded"
+                              />
+                            ) : (
+                              <div className="h-16 w-16 bg-white/10 rounded flex items-center justify-center">
+                                <FileText className="h-6 w-6" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   </div>
                   {msg.role === "user" && (
@@ -241,32 +387,101 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
           </div>
         </ScrollArea>
 
+        {/* Attached Files Preview */}
+        {attachedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2 p-2 bg-bg-tertiary rounded-lg border border-white/10">
+            {attachedFiles.map((f, index) => (
+              <div key={index} className="relative group">
+                {f.preview ? (
+                  <img 
+                    src={f.preview} 
+                    alt={f.file.name} 
+                    className="h-16 w-16 object-cover rounded"
+                  />
+                ) : (
+                  <div className="h-16 w-16 bg-white/10 rounded flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+                <button
+                  onClick={() => removeFile(index)}
+                  className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+                <p className="text-xs text-center mt-1 truncate max-w-[64px]">{f.file.name}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Input Area */}
-        <div className="flex gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about course concepts, request explanations, or generate a quiz..."
-            className="min-h-[60px] max-h-[120px] resize-none bg-bg-tertiary border-white/10"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            disabled={isLoading}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="self-end"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*,application/pdf"
+              multiple
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={cameraInputRef}
+              onChange={handleFileSelect}
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+            />
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+              title="Upload file"
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={isLoading}
+              title="Take photo"
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+            
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about course concepts, upload an image to analyze, or request a quiz..."
+              className="min-h-[60px] max-h-[120px] resize-none bg-bg-tertiary border-white/10 flex-1"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              disabled={isLoading}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={((!input.trim() && attachedFiles.length === 0) || isLoading)}
+              className="self-end"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Upload images or PDFs for analysis • Snap photos of notes or textbooks
+          </p>
         </div>
       </CardContent>
     </Card>
