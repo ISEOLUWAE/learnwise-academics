@@ -368,7 +368,7 @@ const CourseDetail = () => {
                     className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
                   >
                     <Bot className="h-3 w-3 mr-1" />
-                    AI
+                    Lumora AI
                   </TabsTrigger>
                 </TabsList>
 
