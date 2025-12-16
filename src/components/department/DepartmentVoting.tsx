@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Vote, Plus, Loader2, Trophy, CheckCircle, XCircle, Play, Square } from 'lucide-react';
+import { Vote, Plus, Loader2, Trophy, CheckCircle, XCircle, Play, Square, RotateCcw } from 'lucide-react';
 
 interface VoteSession {
   id: string;
@@ -33,9 +33,10 @@ interface Candidate {
 interface DepartmentVotingProps {
   spaceId: string;
   isDeptAdmin: boolean;
+  isClassRep?: boolean;
 }
 
-export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps) => {
+export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: DepartmentVotingProps) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
   const [voteSessions, setVoteSessions] = useState<VoteSession[]>([]);
@@ -47,6 +48,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps
   const [manifesto, setManifesto] = useState('');
   const [registering, setRegistering] = useState(false);
   const [voting, setVoting] = useState(false);
+  const [restarting, setRestarting] = useState(false);
 
   useEffect(() => {
     fetchVoteSessions();
@@ -197,6 +199,43 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps
     }
   };
 
+  const restartVoting = async (sessionId: string) => {
+    setRestarting(true);
+    try {
+      const response = await fetch(
+        `https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/department-space`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'restart_voting',
+            spaceId,
+            voteId: sessionId
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({ title: 'Voting has been reset!' });
+        fetchVoteSessions();
+        fetchCandidates(sessionId);
+        setHasVoted(false);
+      } else {
+        toast({ title: data.error || 'Failed to restart voting', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error restarting voting:', error);
+      toast({ title: 'Failed to restart voting', variant: 'destructive' });
+    } finally {
+      setRestarting(false);
+    }
+  };
+
   const registerAsCandidate = async () => {
     if (!selectedSession || !user) return;
     
@@ -282,7 +321,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps
 
   return (
     <div className="space-y-6">
-      {isDeptAdmin && (
+      {(isDeptAdmin || isClassRep) && (
         <div className="flex justify-end gap-2">
           <Button onClick={createVoteSession}>
             <Plus className="h-4 w-4 mr-2" />
@@ -323,24 +362,43 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps
                   )}
                 </CardDescription>
               </div>
-              {isDeptAdmin && (
-                <Button
-                  variant={selectedSession.is_active ? 'destructive' : 'default'}
-                  size="sm"
-                  onClick={() => toggleVoting(selectedSession.id, !selectedSession.is_active)}
-                >
-                  {selectedSession.is_active ? (
-                    <>
-                      <Square className="h-4 w-4 mr-2" />
-                      Close Voting
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-4 w-4 mr-2" />
-                      Open Voting
-                    </>
+              {(isDeptAdmin || isClassRep) && (
+                <div className="flex gap-2">
+                  {selectedSession.ended_at && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => restartVoting(selectedSession.id)}
+                      disabled={restarting}
+                    >
+                      {restarting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Restart Voting
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                  <Button
+                    variant={selectedSession.is_active ? 'destructive' : 'default'}
+                    size="sm"
+                    onClick={() => toggleVoting(selectedSession.id, !selectedSession.is_active)}
+                  >
+                    {selectedSession.is_active ? (
+                      <>
+                        <Square className="h-4 w-4 mr-2" />
+                        Close Voting
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4 mr-2" />
+                        Open Voting
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           </CardHeader>
@@ -408,7 +466,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin }: DepartmentVotingProps
                             <Trophy className="h-4 w-4 text-amber-400" />
                           )}
                           <span className="font-medium">
-                            {candidate.profiles?.full_name || candidate.profiles?.username || 'Unknown'}
+                            @{candidate.profiles?.username || candidate.profiles?.full_name || 'Unknown'}
                           </span>
                           {candidate.user_id === user?.id && (
                             <Badge variant="outline" className="text-xs">You</Badge>

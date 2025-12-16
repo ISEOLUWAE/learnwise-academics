@@ -240,6 +240,7 @@ const DepartmentDashboard = () => {
                     <DepartmentVoting 
                       spaceId={currentSpace.department_spaces.id}
                       isDeptAdmin={isDeptAdmin}
+                      isClassRep={isClassRep}
                     />
                   )}
                 </TabsContent>

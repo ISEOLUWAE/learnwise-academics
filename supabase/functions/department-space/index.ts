@@ -319,6 +319,76 @@ serve(async (req) => {
       );
     }
 
+    if (action === 'leave_department') {
+      const { spaceId } = body;
+      
+      // Delete membership
+      const { error } = await supabaseClient
+        .from('department_members')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('department_space_id', spaceId);
+
+      if (error) {
+        console.error('Error leaving department:', error);
+        return new Response(
+          JSON.stringify({ error: 'Failed to leave department' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Successfully left department' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (action === 'restart_voting') {
+      const { spaceId, voteId } = body;
+      
+      // Check if user is class_rep or dept_admin
+      const { data: currentMember } = await supabaseClient
+        .from('department_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('department_space_id', spaceId)
+        .single();
+
+      if (!currentMember || !['class_rep', 'dept_admin'].includes(currentMember.role)) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized to restart voting' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Reset all candidates vote counts
+      await supabaseClient
+        .from('vote_candidates')
+        .update({ vote_count: 0 })
+        .eq('vote_id', voteId);
+
+      // Delete all user votes for this session
+      await supabaseClient
+        .from('user_votes')
+        .delete()
+        .eq('vote_id', voteId);
+
+      // Reset voting status
+      await supabaseClient
+        .from('department_votes')
+        .update({ 
+          is_active: false, 
+          started_at: null, 
+          ended_at: null 
+        })
+        .eq('id', voteId);
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Voting has been reset' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: 'Invalid action' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
