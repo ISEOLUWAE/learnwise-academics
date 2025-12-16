@@ -74,6 +74,136 @@ export type Database = {
         }
         Relationships: []
       }
+      cohort_quiz_questions: {
+        Row: {
+          correct_answer: number
+          created_at: string
+          explanation: string | null
+          id: string
+          options: Json
+          question: string
+          quiz_id: string
+        }
+        Insert: {
+          correct_answer: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options: Json
+          question: string
+          quiz_id: string
+        }
+        Update: {
+          correct_answer?: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          question?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_quiz_results: {
+        Row: {
+          answers: Json
+          completed_at: string
+          id: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          quiz_id: string
+          score?: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_quiz_results_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_quizzes: {
+        Row: {
+          created_at: string
+          created_by: string
+          department_space_id: string
+          description: string | null
+          ended_at: string | null
+          file_id: string | null
+          id: string
+          is_active: boolean
+          started_at: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          department_space_id: string
+          description?: string | null
+          ended_at?: string | null
+          file_id?: string | null
+          id?: string
+          is_active?: boolean
+          started_at?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          department_space_id?: string
+          description?: string | null
+          ended_at?: string | null
+          file_id?: string | null
+          id?: string
+          is_active?: boolean
+          started_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_quizzes_department_space_id_fkey"
+            columns: ["department_space_id"]
+            isOneToOne: false
+            referencedRelation: "department_spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_quizzes_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "department_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_likes: {
         Row: {
           created_at: string
@@ -245,6 +375,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "department_announcements_department_space_id_fkey"
+            columns: ["department_space_id"]
+            isOneToOne: false
+            referencedRelation: "department_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_files: {
+        Row: {
+          created_at: string
+          department_space_id: string
+          description: string | null
+          file_name: string
+          file_type: string
+          file_url: string
+          id: string
+          title: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          department_space_id: string
+          description?: string | null
+          file_name: string
+          file_type: string
+          file_url: string
+          id?: string
+          title: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          department_space_id?: string
+          description?: string | null
+          file_name?: string
+          file_type?: string
+          file_url?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_files_department_space_id_fkey"
             columns: ["department_space_id"]
             isOneToOne: false
             referencedRelation: "department_spaces"
