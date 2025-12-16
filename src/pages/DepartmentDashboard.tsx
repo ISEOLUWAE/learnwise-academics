@@ -13,6 +13,8 @@ import { DepartmentAnnouncements } from '@/components/department/DepartmentAnnou
 import { DepartmentTimetable } from '@/components/department/DepartmentTimetable';
 import { DepartmentVoting } from '@/components/department/DepartmentVoting';
 import { DepartmentMembers } from '@/components/department/DepartmentMembers';
+import { DepartmentFiles } from '@/components/department/DepartmentFiles';
+import { DepartmentCohortQuiz } from '@/components/department/DepartmentCohortQuiz';
 import { 
   Users, 
   Megaphone, 
@@ -22,7 +24,9 @@ import {
   Shield,
   UserCircle,
   Plus,
-  Loader2
+  Loader2,
+  FileText,
+  BookOpen
 } from 'lucide-react';
 
 const DepartmentDashboard = () => {
@@ -198,7 +202,7 @@ const DepartmentDashboard = () => {
 
               {/* Main Content */}
               <Tabs defaultValue="announcements" className="space-y-6">
-                <TabsList className="bg-bg-secondary/50 border border-white/10">
+                <TabsList className="bg-bg-secondary/50 border border-white/10 flex-wrap h-auto gap-1 p-1">
                   <TabsTrigger value="announcements" className="flex items-center gap-2">
                     <Megaphone className="h-4 w-4" />
                     <span className="hidden sm:inline">Announcements</span>
@@ -206,6 +210,14 @@ const DepartmentDashboard = () => {
                   <TabsTrigger value="timetable" className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span className="hidden sm:inline">Timetable</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="files" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <span className="hidden sm:inline">Files</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="quiz" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="hidden sm:inline">Quiz</span>
                   </TabsTrigger>
                   <TabsTrigger value="voting" className="flex items-center gap-2">
                     <Vote className="h-4 w-4" />
@@ -229,6 +241,24 @@ const DepartmentDashboard = () => {
                 <TabsContent value="timetable">
                   {currentSpace && (
                     <DepartmentTimetable 
+                      spaceId={currentSpace.department_spaces.id}
+                      canManage={canManageDepartment}
+                    />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="files">
+                  {currentSpace && (
+                    <DepartmentFiles 
+                      spaceId={currentSpace.department_spaces.id}
+                      canManage={canManageDepartment}
+                    />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="quiz">
+                  {currentSpace && (
+                    <DepartmentCohortQuiz 
                       spaceId={currentSpace.department_spaces.id}
                       canManage={canManageDepartment}
                     />

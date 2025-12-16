@@ -519,7 +519,7 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
               Leave Department
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to leave this department? You won't be able to join another department after leaving.
+              Are you sure you want to leave this department? You can join a different department after leaving.
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 mt-4">
