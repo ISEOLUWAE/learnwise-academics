@@ -10,8 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Crown, Shield, UserCircle, Loader2, Phone, PhoneCall, AlertTriangle } from 'lucide-react';
+import { Users, Crown, Shield, UserCircle, Loader2, Phone, PhoneCall, AlertTriangle, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface Member {
   id: string;
@@ -35,6 +36,7 @@ interface DepartmentMembersProps {
 export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: DepartmentMembersProps) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
@@ -44,6 +46,8 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
   const [urgentMessage, setUrgentMessage] = useState('');
   const [sendingCall, setSendingCall] = useState(false);
   const [userProfile, setUserProfile] = useState<{ phone_number: string | null } | null>(null);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [leavingDepartment, setLeavingDepartment] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -227,13 +231,52 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
   };
 
   const getDisplayName = (member: Member) => {
-    if (member.profiles?.full_name && member.profiles.full_name.trim()) {
-      return member.profiles.full_name;
-    }
+    // Prioritize username for display
     if (member.profiles?.username && member.profiles.username.trim()) {
       return member.profiles.username;
     }
+    if (member.profiles?.full_name && member.profiles.full_name.trim()) {
+      return member.profiles.full_name;
+    }
     return 'Student';
+  };
+
+  const leaveDepartment = async () => {
+    if (!session) return;
+    
+    setLeavingDepartment(true);
+    try {
+      const response = await fetch(
+        `https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/department-space`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            action: 'leave_department',
+            spaceId
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({ title: 'Successfully left department' });
+        setShowLeaveModal(false);
+        navigate('/');
+        window.location.reload();
+      } else {
+        toast({ title: data.error || 'Failed to leave department', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error leaving department:', error);
+      toast({ title: 'Failed to leave department', variant: 'destructive' });
+    } finally {
+      setLeavingDepartment(false);
+    }
   };
 
   const getInitials = (member: Member) => {
@@ -287,6 +330,15 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
                 Trigger Urgent Call ({membersWithPhones.length} reachable)
               </Button>
             )}
+            
+            <Button
+              variant="outline"
+              onClick={() => setShowLeaveModal(true)}
+              className="gap-2 border-destructive/50 text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" />
+              Leave Department
+            </Button>
           </div>
           
           {!userProfile?.phone_number && (
@@ -454,6 +506,41 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
                 )}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leave Department Modal */}
+      <Dialog open={showLeaveModal} onOpenChange={setShowLeaveModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <LogOut className="h-5 w-5" />
+              Leave Department
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to leave this department? You won't be able to join another department after leaving.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowLeaveModal(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={leaveDepartment} 
+              disabled={leavingDepartment} 
+              className="flex-1"
+            >
+              {leavingDepartment ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Leaving...
+                </>
+              ) : (
+                'Leave Department'
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
