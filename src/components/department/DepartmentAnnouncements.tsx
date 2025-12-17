@@ -161,7 +161,7 @@ export const DepartmentAnnouncements = ({ spaceId, canManage }: DepartmentAnnoun
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {canManage && (
         <div className="flex justify-end">
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
@@ -171,7 +171,7 @@ export const DepartmentAnnouncements = ({ spaceId, canManage }: DepartmentAnnoun
                 New Announcement
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Create Announcement</DialogTitle>
               </DialogHeader>
@@ -191,7 +191,7 @@ export const DepartmentAnnouncements = ({ spaceId, canManage }: DepartmentAnnoun
                     rows={4}
                   />
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -252,14 +252,14 @@ export const DepartmentAnnouncements = ({ spaceId, canManage }: DepartmentAnnoun
           {announcements.map((announcement) => (
             <Card 
               key={announcement.id} 
-              className={`bg-bg-secondary/50 border-white/10 ${
+              className={`bg-bg-secondary/50 border-white/10 w-full overflow-hidden break-words ${
                 announcement.is_urgent ? 'border-l-4 border-l-amber-500' : ''
               }`}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">{announcement.title}</CardTitle>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CardTitle className="text-lg truncate max-w-[calc(100%-120px)]">{announcement.title}</CardTitle>
                     {announcement.is_urgent && (
                       <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
                         <AlertTriangle className="h-3 w-3 mr-1" />
@@ -283,7 +283,7 @@ export const DepartmentAnnouncements = ({ spaceId, canManage }: DepartmentAnnoun
                 </p>
               </CardHeader>
               <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{announcement.content}</p>
+                <p className="text-sm whitespace-pre-wrap break-words">{announcement.content}</p>
               </CardContent>
             </Card>
           ))}

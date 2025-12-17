@@ -150,7 +150,7 @@ export const DepartmentTimetable = ({ spaceId, canManage }: DepartmentTimetableP
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {canManage && (
         <div className="flex justify-end">
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
@@ -160,7 +160,7 @@ export const DepartmentTimetable = ({ spaceId, canManage }: DepartmentTimetableP
                 Add Class
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Add Class to Timetable</DialogTitle>
               </DialogHeader>
@@ -258,7 +258,7 @@ export const DepartmentTimetable = ({ spaceId, canManage }: DepartmentTimetableP
             if (dayEntries.length === 0) return null;
 
             return (
-              <Card key={day} className="bg-bg-secondary/50 border-white/10">
+              <Card key={day} className="bg-bg-secondary/50 border-white/10 w-full overflow-hidden">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-brand-blue" />
@@ -272,27 +272,27 @@ export const DepartmentTimetable = ({ spaceId, canManage }: DepartmentTimetableP
                         key={entry.id}
                         className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
                       >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold">{entry.course_code}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="font-semibold break-words">{entry.course_code}</span>
                             <span className="text-muted-foreground">-</span>
-                            <span>{entry.course_title}</span>
+                            <span className="break-words">{entry.course_title}</span>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {formatTime(entry.start_time)} - {formatTime(entry.end_time)}
+                          <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1 flex-shrink-0">
+                              <Clock className="h-3 w-3 flex-shrink-0" />
+                              <span className="break-words">{formatTime(entry.start_time)} - {formatTime(entry.end_time)}</span>
                             </span>
                             {entry.venue && (
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {entry.venue}
+                              <span className="flex items-center gap-1 flex-shrink-0">
+                                <MapPin className="h-3 w-3 flex-shrink-0" />
+                                <span className="break-words">{entry.venue}</span>
                               </span>
                             )}
                             {entry.lecturer && (
-                              <span className="flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                {entry.lecturer}
+                              <span className="flex items-center gap-1 flex-shrink-0">
+                                <User className="h-3 w-3 flex-shrink-0" />
+                                <span className="break-words">{entry.lecturer}</span>
                               </span>
                             )}
                           </div>

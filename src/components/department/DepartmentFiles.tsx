@@ -272,7 +272,7 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {canManage && (
         <div className="flex justify-end">
           <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
@@ -343,34 +343,31 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-brand-blue flex-shrink-0 mt-1" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm sm:text-base truncate">{file.title}</h4>
+                      <h4 className="font-medium text-sm sm:text-base break-words">{file.title}</h4>
                       {file.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{file.description}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 break-words">{file.description}</p>
                       )}
-                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-2 text-xs text-muted-foreground">
-                        <span className="truncate max-w-[100px]">@{file.uploader?.username || file.uploader?.full_name || 'Unknown'}</span>
-                        <span>•</span>
-                        <span>{format(new Date(file.created_at), 'PP')}</span>
+                      <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-muted-foreground">
+                        <span className="break-words">@{file.uploader?.username || file.uploader?.full_name || 'Unknown'}</span>
+                        <span className="flex-shrink-0">•</span>
+                        <span className="flex-shrink-0">{format(new Date(file.created_at), 'PP')}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground truncate mt-1">{file.file_name}</p>
+                      <p className="text-xs text-muted-foreground mt-1 break-words">{file.file_name}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => openAIChat(file)}
-                      className="text-xs"
                     >
                       <Bot className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                      <span className="hidden sm:inline">AI Chat</span>
-                      <span className="sm:hidden">AI</span>
+                      AI Chat
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => window.open(file.file_url, '_blank')}
-                      className="text-xs"
                     >
                       View
                     </Button>
@@ -397,7 +394,7 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
               <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-brand-blue flex-shrink-0" />
-              <span className="truncate">AI Assistant - {currentFile?.title}</span>
+              <span className="break-words">AI Assistant - {currentFile?.title}</span>
             </DialogTitle>
           </DialogHeader>
           
@@ -415,7 +412,7 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
                         : 'bg-white/10'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-xs sm:text-sm">{message.content}</p>
+                    <p className="whitespace-pre-wrap break-words text-xs sm:text-sm">{message.content}</p>
                   </div>
                 </div>
               ))}

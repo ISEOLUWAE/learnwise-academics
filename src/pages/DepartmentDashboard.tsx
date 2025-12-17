@@ -202,34 +202,34 @@ const DepartmentDashboard = () => {
 
               {/* Main Content */}
               <Tabs defaultValue="announcements" className="space-y-6">
-                <TabsList className="bg-bg-secondary/50 border border-white/10 flex-wrap h-auto gap-1 p-1">
-                  <TabsTrigger value="announcements" className="flex items-center gap-2">
+                <TabsList className="bg-bg-secondary/50 border border-white/10 flex flex-wrap h-auto gap-1 p-1 overflow-x-auto max-w-full">
+                  <TabsTrigger value="announcements" className="flex items-center gap-2 flex-none px-3 py-2 whitespace-nowrap">
                     <Megaphone className="h-4 w-4" />
                     <span className="hidden sm:inline">Announcements</span>
                   </TabsTrigger>
-                  <TabsTrigger value="timetable" className="flex items-center gap-2">
+                  <TabsTrigger value="timetable" className="flex items-center gap-2 flex-none px-3 py-2 whitespace-nowrap">
                     <Calendar className="h-4 w-4" />
                     <span className="hidden sm:inline">Timetable</span>
                   </TabsTrigger>
-                  <TabsTrigger value="files" className="flex items-center gap-2">
+                  <TabsTrigger value="files" className="flex items-center gap-2 flex-none px-3 py-2 whitespace-nowrap">
                     <FileText className="h-4 w-4" />
                     <span className="hidden sm:inline">Files</span>
                   </TabsTrigger>
-                  <TabsTrigger value="quiz" className="flex items-center gap-2">
+                  <TabsTrigger value="quiz" className="flex items-center gap-2 flex-none px-3 py-2 whitespace-nowrap">
                     <BookOpen className="h-4 w-4" />
                     <span className="hidden sm:inline">Quiz</span>
                   </TabsTrigger>
-                  <TabsTrigger value="voting" className="flex items-center gap-2">
+                  <TabsTrigger value="voting" className="flex items-center gap-2 flex-none px-3 py-2 whitespace-nowrap">
                     <Vote className="h-4 w-4" />
                     <span className="hidden sm:inline">Voting</span>
                   </TabsTrigger>
-                  <TabsTrigger value="members" className="flex items-center gap-2">
+                  <TabsTrigger value="members" className="flex items-center gap-2 flex-none px-3 py-2 whitespace-nowrap">
                     <Users className="h-4 w-4" />
                     <span className="hidden sm:inline">Members</span>
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="announcements">
+                <TabsContent value="announcements" className="overflow-x-hidden">
                   {currentSpace && (
                     <DepartmentAnnouncements 
                       spaceId={currentSpace.department_spaces.id}
@@ -238,7 +238,7 @@ const DepartmentDashboard = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="timetable">
+                <TabsContent value="timetable" className="overflow-x-hidden">
                   {currentSpace && (
                     <DepartmentTimetable 
                       spaceId={currentSpace.department_spaces.id}
@@ -247,7 +247,7 @@ const DepartmentDashboard = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="files">
+                <TabsContent value="files" className="overflow-x-hidden">
                   {currentSpace && (
                     <DepartmentFiles 
                       spaceId={currentSpace.department_spaces.id}
@@ -256,16 +256,18 @@ const DepartmentDashboard = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="quiz">
+                <TabsContent value="quiz" className="overflow-x-hidden">
                   {currentSpace && (
                     <DepartmentCohortQuiz 
                       spaceId={currentSpace.department_spaces.id}
                       canManage={canManageDepartment}
+                      isDeptAdmin={isDeptAdmin}
+                      isClassRep={isClassRep}
                     />
                   )}
                 </TabsContent>
 
-                <TabsContent value="voting">
+                <TabsContent value="voting" className="overflow-x-hidden">
                   {currentSpace && (
                     <DepartmentVoting 
                       spaceId={currentSpace.department_spaces.id}
@@ -275,7 +277,7 @@ const DepartmentDashboard = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="members">
+                <TabsContent value="members" className="overflow-x-hidden">
                   {currentSpace && (
                     <DepartmentMembers 
                       spaceId={currentSpace.department_spaces.id}

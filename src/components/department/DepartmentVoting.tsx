@@ -320,7 +320,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {(isDeptAdmin || isClassRep) && (
         <div className="flex justify-end gap-2">
           <Button onClick={createVoteSession}>
@@ -331,7 +331,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
       )}
 
       {voteSessions.length === 0 ? (
-        <Card className="bg-bg-secondary/50 border-white/10">
+        <Card className="bg-bg-secondary/50 border-white/10 w-full overflow-hidden">
           <CardContent className="py-12 text-center">
             <Vote className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground">No elections scheduled</p>
@@ -340,11 +340,12 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
       ) : selectedSession && (
         <Card className="bg-bg-secondary/50 border-white/10">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="space-y-4">
+              {/* Title and status */}
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-amber-400" />
-                  {selectedSession.title}
+                <CardTitle className="flex items-center gap-2 mb-2">
+                  <Trophy className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                  <span className="break-words">{selectedSession.title}</span>
                 </CardTitle>
                 <CardDescription>
                   {selectedSession.is_active ? (
@@ -362,8 +363,10 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
                   )}
                 </CardDescription>
               </div>
+
+              {/* Admin controls - responsive grid */}
               {(isDeptAdmin || isClassRep) && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {selectedSession.ended_at && (
                     <Button
                       variant="outline"
@@ -375,7 +378,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
-                          <RotateCcw className="h-4 w-4 mr-2" />
+                          <RotateCcw className="h-4 w-4 mr-1" />
                           Restart Voting
                         </>
                       )}
@@ -388,12 +391,12 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
                   >
                     {selectedSession.is_active ? (
                       <>
-                        <Square className="h-4 w-4 mr-2" />
+                        <Square className="h-4 w-4 mr-1" />
                         Close Voting
                       </>
                     ) : (
                       <>
-                        <Play className="h-4 w-4 mr-2" />
+                        <Play className="h-4 w-4 mr-1" />
                         Open Voting
                       </>
                     )}
@@ -461,11 +464,11 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           {index === 0 && totalVotes > 0 && (
                             <Trophy className="h-4 w-4 text-amber-400" />
                           )}
-                          <span className="font-medium">
+                          <span className="font-medium truncate">
                             @{candidate.profiles?.username || candidate.profiles?.full_name || 'Unknown'}
                           </span>
                           {candidate.user_id === user?.id && (
@@ -480,8 +483,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
                             <Button
                               size="sm"
                               onClick={() => castVote(candidate.id)}
-                              disabled={voting}
-                            >
+                              disabled={voting}                              className="flex-shrink-0"                            >
                               {voting ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
@@ -498,7 +500,7 @@ export const DepartmentVoting = ({ spaceId, isDeptAdmin, isClassRep }: Departmen
                         />
                       )}
                       {candidate.manifesto && (
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground mt-2">
                           "{candidate.manifesto}"
                         </p>
                       )}

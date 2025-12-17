@@ -306,9 +306,9 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
   const membersWithPhones = members.filter(m => m.profiles?.phone_number);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {/* Phone Number & Urgent Call Actions */}
-      <Card className="bg-bg-secondary/50 border-white/10">
+      <Card className="bg-bg-secondary/50 border-white/10 w-full overflow-hidden">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
             <Button
@@ -591,9 +591,9 @@ const MemberRow = ({
             {getInitials(member)}
           </AvatarFallback>
         </Avatar>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-medium">@{getDisplayName(member)}</p>
+            <p className="font-medium truncate">@{getDisplayName(member)}</p>
             {member.profiles?.phone_number && (
               <Phone className="h-3 w-3 text-green-400" />
             )}

@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpen, Plus, Loader2, Play, Square, CheckCircle, Trophy, Users } from 'lucide-react';
+import { BookOpen, Plus, Loader2, Play, Square, CheckCircle, Trophy, Users, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CohortQuiz {
@@ -44,9 +44,11 @@ interface QuizResult {
 interface DepartmentCohortQuizProps {
   spaceId: string;
   canManage: boolean;
+  isDeptAdmin?: boolean;
+  isClassRep?: boolean;
 }
 
-export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQuizProps) => {
+export const DepartmentCohortQuiz = ({ spaceId, canManage, isDeptAdmin = false, isClassRep = false }: DepartmentCohortQuizProps) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
   const [quizzes, setQuizzes] = useState<CohortQuiz[]>([]);
@@ -229,6 +231,31 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
     }
   };
 
+  const deleteQuiz = async (quizId: string) => {
+    if (!quizId) return;
+    // confirm deletion
+    if (!window.confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) return;
+
+    try {
+      // remove related results and questions first for safety
+      await supabase.from('cohort_quiz_results').delete().eq('quiz_id', quizId);
+      await supabase.from('cohort_quiz_questions').delete().eq('quiz_id', quizId);
+
+      const { error } = await supabase
+        .from('cohort_quizzes')
+        .delete()
+        .eq('id', quizId);
+
+      if (error) throw error;
+      toast({ title: 'Quiz deleted' });
+      setSelectedQuiz(null);
+      fetchQuizzes();
+    } catch (err) {
+      console.error('Error deleting quiz:', err);
+      toast({ title: 'Failed to delete quiz', variant: 'destructive' });
+    }
+  };
+
   const toggleQuiz = async (activate: boolean) => {
     if (!selectedQuiz) return;
     
@@ -302,7 +329,7 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {canManage && (
         <div className="flex justify-end gap-2">
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
@@ -312,7 +339,7 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
                 Create Quiz
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Create Cohort Quiz</DialogTitle>
                 <DialogDescription>
@@ -350,49 +377,52 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
       ) : selectedQuiz && (
         <Card className="bg-bg-secondary/50 border-white/10">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="space-y-4">
+              {/* Title and status */}
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-brand-blue" />
-                  {selectedQuiz.title}
+                <CardTitle className="flex items-center gap-2 mb-2">
+                  <BookOpen className="h-5 w-5 text-brand-blue flex-shrink-0" />
+                  <span className="break-words">{selectedQuiz.title}</span>
                 </CardTitle>
-                <CardDescription className="flex items-center gap-2 mt-1">
+                <CardDescription className="flex flex-wrap items-center gap-2">
                   {selectedQuiz.is_active ? (
-                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30 flex-shrink-0">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       Active
                     </Badge>
                   ) : selectedQuiz.ended_at ? (
-                    <Badge variant="outline">Ended</Badge>
+                    <Badge variant="outline" className="flex-shrink-0">Ended</Badge>
                   ) : (
-                    <Badge variant="outline">Not Started</Badge>
+                    <Badge variant="outline" className="flex-shrink-0">Not Started</Badge>
                   )}
-                  <span className="text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {questions.length} question{questions.length !== 1 ? 's' : ''}
                   </span>
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+
+              {/* Action buttons - responsive grid */}
+              <div className="flex flex-wrap gap-2">
                 {selectedQuiz.is_active && !hasSubmitted && questions.length > 0 && (
-                  <Button onClick={startTakingQuiz}>
-                    <Play className="h-4 w-4 mr-2" />
+                  <Button onClick={startTakingQuiz} size="sm">
+                    <Play className="h-4 w-4 mr-1" />
                     Take Quiz
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => setShowResultsModal(true)}>
-                  <Trophy className="h-4 w-4 mr-2" />
+                <Button variant="outline" onClick={() => setShowResultsModal(true)} size="sm">
+                  <Trophy className="h-4 w-4 mr-1" />
                   Results
                 </Button>
                 {canManage && (
                   <>
                     <Dialog open={showAddQuestionModal} onOpenChange={setShowAddQuestionModal}>
                       <DialogTrigger asChild>
-                        <Button variant="outline">
-                          <Plus className="h-4 w-4 mr-2" />
+                        <Button variant="outline" size="sm">
+                          <Plus className="h-4 w-4 mr-1" />
                           Add Question
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-lg">
+                      <DialogContent className="max-w-[95vw] sm:max-w-lg">
                         <DialogHeader>
                           <DialogTitle>Add Question</DialogTitle>
                         </DialogHeader>
@@ -444,19 +474,30 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
                       variant={selectedQuiz.is_active ? 'destructive' : 'default'}
                       onClick={() => toggleQuiz(!selectedQuiz.is_active)}
                       disabled={questions.length === 0}
+                      size="sm"
                     >
                       {selectedQuiz.is_active ? (
                         <>
-                          <Square className="h-4 w-4 mr-2" />
+                          <Square className="h-4 w-4 mr-1" />
                           End Quiz
                         </>
                       ) : (
                         <>
-                          <Play className="h-4 w-4 mr-2" />
+                          <Play className="h-4 w-4 mr-1" />
                           Start Quiz
                         </>
                       )}
                     </Button>
+                    {(canManage || isDeptAdmin || isClassRep) && (
+                      <Button
+                        variant="destructive"
+                        onClick={() => deleteQuiz(selectedQuiz.id)}
+                        size="sm"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    )}
                   </>
                 )}
               </div>
@@ -476,9 +517,9 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
 
       {/* Take Quiz Modal */}
       <Dialog open={showTakeQuizModal} onOpenChange={setShowTakeQuizModal}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedQuiz?.title}</DialogTitle>
+            <DialogTitle className="break-words">{selectedQuiz?.title}</DialogTitle>
           </DialogHeader>
           
           {!quizCompleted ? (
@@ -511,11 +552,13 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
                 </div>
               )}
               
-              <div className="flex justify-between">
+              <div className="flex gap-2 justify-between">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentQuestionIndex(i => i - 1)}
                   disabled={currentQuestionIndex === 0}
+                  size="sm"
+                  className="flex-1"
                 >
                   Previous
                 </Button>
@@ -523,6 +566,8 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
                   <Button
                     onClick={submitQuiz}
                     disabled={selectedAnswers.some(a => a === -1)}
+                    size="sm"
+                    className="flex-1"
                   >
                     Submit Quiz
                   </Button>
@@ -530,6 +575,8 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
                   <Button
                     onClick={() => setCurrentQuestionIndex(i => i + 1)}
                     disabled={selectedAnswers[currentQuestionIndex] === -1}
+                    size="sm"
+                    className="flex-1"
                   >
                     Next
                   </Button>
@@ -554,11 +601,11 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
 
       {/* Results Modal */}
       <Dialog open={showResultsModal} onOpenChange={setShowResultsModal}>
-        <DialogContent>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg overflow-x-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-400" />
-              Quiz Results
+              <Trophy className="h-5 w-5 text-amber-400 flex-shrink-0" />
+              <span className="break-words">Quiz Results</span>
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
@@ -572,11 +619,11 @@ export const DepartmentCohortQuiz = ({ spaceId, canManage }: DepartmentCohortQui
                     index === 0 ? 'border border-amber-500/30' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    {index === 0 && <Trophy className="h-4 w-4 text-amber-400" />}
-                    <span>@{result.profile?.username || result.profile?.full_name || 'Unknown'}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {index === 0 && <Trophy className="h-4 w-4 text-amber-400 flex-shrink-0" />}
+                    <span className="break-words text-sm">@{result.profile?.username || result.profile?.full_name || 'Unknown'}</span>
                   </div>
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="flex-shrink-0">
                     {result.score}/{result.total_questions}
                   </Badge>
                 </div>

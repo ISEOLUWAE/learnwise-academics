@@ -1,73 +1,63 @@
-# Welcome to your acad project
+# Learnwise Academics
 
-## Project info
+## Project Description
 
-**URL**: https://acad.dev/projects/b2a75a5a-e14b-427a-b78d-491783458d75
+Lumora (Learnwise Academics) is a web platform for students and department administrators to manage academic activities, access course materials, and collaborate. The app supports department spaces with announcements, timetables, shared files, cohort quizzes, and voting/elections. Students can take quizzes, appear on leaderboards, access textbooks and course materials, connect and interact with other students in the same course, and use an AI assistant on each course detail page to help explain concepts. The platform also supports GPA/CGPA calculations for students. For urgent department-wide announcements the system can trigger phone calls via Twilio.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Department dashboard: announcements, timetables, files integrated with ai, quizzes, voting/elections
+- Course pages with textbook/material access and an AI assistant for explanations
+- Cohort quizzes with result tracking and leaderboards
+- GPA / CGPA calculation tools for students
+- File uploads with AI-assisted chat/analysis of uploaded documents
+- Social features: connect, message, and interact with classmates per course
+- Urgent announcement phone call triggers using Twilio
+- Supabase backend for auth, database and storage; edge functions for server-side tasks
 
-**Use acad**
+## Installation & Run (Local)
 
-Simply visit the [acad Project](https://acad.dev/projects/b2a75a5a-e14b-427a-b78d-491783458d75) and start prompting.
+Prerequisites:
+- Node.js (recommended via nvm)
+- npm or yarn
 
-Changes made via acad will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in acad.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Steps:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# 1. Clone the repository
 git clone <YOUR_GIT_URL>
+cd learnwise-academics
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Install dependencies
+npm install
+# or: yarn
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Start development server
 npm run dev
+# open http://localhost:5173
 ```
 
-**Edit a file directly in GitHub**
+Notes:
+- The project uses Supabase for auth, database and storage. Configure environment variables (e.g., `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) or a `.env` file as required by your environment.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+## Tech Stack
 
 - Vite
-- TypeScript
-- React
-- shadcn-ui
+- React (TypeScript)
 - Tailwind CSS
+- shadcn-ui (Radix + Tailwind component library)
+- Supabase (Auth, Database, Storage, Edge Functions)
+- Framer Motion (animations)
+- Lucide Icons
+- Twilio (for urgent announcement phone calls)
 
-## How can I deploy this project?
+## Team Members
+- Elebiemayo Iseoluwa Emmanuel
+- Ogunkoya Emmanuel Oluwakemi
+- Nwokedi Ifechukwu Emmanuel
 
-Simply open [acad](https://acad.dev/projects/b2a75a5a-e14b-427a-b78d-491783458d75) and click on Share -> Publish.
+## Quick Usability
 
-## Can I connect a custom domain to my acad project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.acad.dev/features/custom-domain#custom-domain)
+- Start dev server: `npm run dev`
+- Build for production: `npm run build`
+- Preview production build: `npm run preview`
