@@ -1,18 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Menu, X, BookOpen, User, LogOut, Calculator, LogIn, Shield } from "lucide-react";
+import { Menu, X, BookOpen, User, LogOut, Calculator, LogIn, Shield, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import GPACalculator from "@/components/courses/GPACalculator";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isGPAOpen, setIsGPAOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRole();
+
+  useEffect(() => {
+    if (user) {
+      fetchUsername();
+    } else {
+      setUsername(null);
+    }
+  }, [user]);
+
+  const fetchUsername = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('username, full_name')
+      .eq('id', user.id)
+      .single();
+    
+    if (data) {
+      setUsername(data.username || data.full_name || null);
+    }
+  };
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -25,6 +48,8 @@ const Header = () => {
   ];
 
   const isActivePath = (path: string) => location.pathname === path;
+
+  const displayName = username || user?.email?.split('@')[0] || 'User';
 
   return (
     <motion.header
@@ -82,10 +107,12 @@ const Header = () => {
                     </Button>
                   </Link>
                 )}
-                <span className="text-xs xl:text-sm text-muted-foreground flex items-center gap-1 max-w-[120px] xl:max-w-[180px] truncate">
-                  <User className="h-3 w-3 xl:h-4 xl:w-4 flex-shrink-0" />
-                  <span className="truncate">{user.email}</span>
-                </span>
+                <Link to="/profile">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 xl:gap-2 text-xs xl:text-sm max-w-[120px] xl:max-w-[180px]">
+                    <User className="h-3 w-3 xl:h-4 xl:w-4 flex-shrink-0" />
+                    <span className="truncate">@{displayName}</span>
+                  </Button>
+                </Link>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -110,7 +137,7 @@ const Header = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -123,7 +150,7 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-bg-secondary/95 backdrop-blur-lg rounded-lg mt-2 p-4"
+            className="lg:hidden bg-bg-secondary/95 backdrop-blur-lg rounded-lg mt-2 p-4"
           >
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
@@ -164,8 +191,15 @@ const Header = () => {
                         </Button>
                       </Link>
                     )}
-                    <div className="text-center text-sm text-muted-foreground py-2">
-                      {user.email}
+                    <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Profile Settings
+                      </Button>
+                    </Link>
+                    <div className="text-center text-sm text-muted-foreground py-2 flex items-center justify-center gap-2">
+                      <User className="h-4 w-4" />
+                      @{displayName}
                     </div>
                     <Button 
                       variant="outline" 

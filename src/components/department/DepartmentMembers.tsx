@@ -310,31 +310,34 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
       {/* Phone Number & Urgent Call Actions */}
       <Card className="bg-bg-secondary/50 border-white/10">
         <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
             <Button
               variant="outline"
               onClick={() => setShowPhoneModal(true)}
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
+              size="sm"
             >
               <Phone className="h-4 w-4" />
-              {userProfile?.phone_number ? 'Update Phone Number' : 'Add Phone Number'}
+              {userProfile?.phone_number ? 'Update Phone' : 'Add Phone'}
             </Button>
             
             {(isClassRep || isDeptAdmin) && (
               <Button
                 variant="destructive"
                 onClick={() => setShowUrgentCallModal(true)}
-                className="gap-2"
+                className="gap-2 w-full sm:w-auto"
+                size="sm"
               >
                 <PhoneCall className="h-4 w-4" />
-                Trigger Urgent Call ({membersWithPhones.length} reachable)
+                <span className="truncate">Urgent Call ({membersWithPhones.length})</span>
               </Button>
             )}
             
             <Button
               variant="outline"
               onClick={() => setShowLeaveModal(true)}
-              className="gap-2 border-destructive/50 text-destructive hover:bg-destructive/10"
+              className="gap-2 w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
+              size="sm"
             >
               <LogOut className="h-4 w-4" />
               Leave Department
@@ -342,9 +345,9 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
           </div>
           
           {!userProfile?.phone_number && (
-            <p className="text-sm text-muted-foreground mt-3">
-              <AlertTriangle className="h-4 w-4 inline mr-1 text-amber-400" />
-              Add your phone number to receive urgent voice call notifications from your class rep.
+            <p className="text-xs sm:text-sm text-muted-foreground mt-3">
+              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 text-amber-400" />
+              Add your phone to receive urgent voice calls from your class rep.
             </p>
           )}
         </CardContent>
@@ -589,36 +592,33 @@ const MemberRow = ({
           </AvatarFallback>
         </Avatar>
         <div>
-          <div className="flex items-center gap-2">
-            <p className="font-medium">{getDisplayName(member)}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-medium">@{getDisplayName(member)}</p>
             {member.profiles?.phone_number && (
               <Phone className="h-3 w-3 text-green-400" />
             )}
+            {getRoleBadge(member.role)}
           </div>
           <p className="text-xs text-muted-foreground">
             Joined {format(new Date(member.joined_at), 'PP')}
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {canEditThisMember && !isSelf ? (
-          <Select
-            value={member.role}
-            onValueChange={(value) => onRoleChange(member.id, value as any)}
-          >
-            <SelectTrigger className="w-[130px] h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="student">Student</SelectItem>
-              <SelectItem value="class_rep">Class Rep</SelectItem>
-              <SelectItem value="dept_admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-        ) : (
-          getRoleBadge(member.role)
-        )}
-      </div>
+      {canEditThisMember && !isSelf && (
+        <Select
+          value={member.role}
+          onValueChange={(value) => onRoleChange(member.id, value as any)}
+        >
+          <SelectTrigger className="w-[130px] h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="student">Student</SelectItem>
+            <SelectItem value="class_rep">Class Rep</SelectItem>
+            <SelectItem value="dept_admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 };

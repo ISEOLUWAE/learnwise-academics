@@ -132,43 +132,60 @@ serve(async (req) => {
     const twilioBaseUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Calls.json`;
     const auth = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
 
+    console.log(`Starting Twilio calls for ${membersWithPhones.length} members`);
+    console.log(`Twilio Account SID: ${twilioAccountSid?.substring(0, 10)}...`);
+    console.log(`Twilio Phone Number: ${twilioPhoneNumber}`);
+
     for (const member of membersWithPhones) {
       try {
-        // Format phone number
+        // Format phone number to E.164
         let phoneNumber = member.phone_number!.trim();
+        
+        // Remove any spaces, dashes, or special characters
+        phoneNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+        
         if (!phoneNumber.startsWith('+')) {
           // Assume Nigerian number if no country code
-          phoneNumber = phoneNumber.startsWith('0') 
-            ? '+234' + phoneNumber.slice(1) 
-            : '+234' + phoneNumber;
+          if (phoneNumber.startsWith('0')) {
+            phoneNumber = '+234' + phoneNumber.slice(1);
+          } else if (phoneNumber.startsWith('234')) {
+            phoneNumber = '+' + phoneNumber;
+          } else {
+            phoneNumber = '+234' + phoneNumber;
+          }
         }
+
+        console.log(`Calling ${member.full_name || member.username} at ${phoneNumber}`);
 
         const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${message}. I repeat: ${message}</Say></Response>`;
         
+        const formData = new URLSearchParams();
+        formData.append('To', phoneNumber);
+        formData.append('From', twilioPhoneNumber);
+        formData.append('Twiml', twimlMessage);
+
         const response = await fetch(twilioBaseUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Basic ${auth}`,
             'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: new URLSearchParams({
-            To: phoneNumber,
-            From: twilioPhoneNumber,
-            Twiml: twimlMessage,
-          }),
+          body: formData.toString(),
         });
 
+        const responseText = await response.text();
+        console.log(`Twilio response for ${phoneNumber}: ${response.status} - ${responseText}`);
+
         if (response.ok) {
-          callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'success' });
-          console.log(`Call initiated for ${member.full_name || member.username}`);
+          callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'success', phone: phoneNumber });
+          console.log(`Call initiated successfully for ${member.full_name || member.username}`);
         } else {
-          const errorText = await response.text();
-          console.error(`Failed to call ${member.id}:`, errorText);
-          callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'failed', error: errorText });
+          console.error(`Failed to call ${member.id} at ${phoneNumber}:`, responseText);
+          callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'failed', error: responseText, phone: phoneNumber });
         }
       } catch (callError) {
         console.error(`Error calling ${member.id}:`, callError);
-        callResults.push({ userId: member.id, status: 'error' });
+        callResults.push({ userId: member.id, name: member.full_name || member.username, status: 'error', error: String(callError) });
       }
     }
 

@@ -253,65 +253,65 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
 
   return (
     <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-brand-blue" />
-          AI Course Assistant
-          <Badge variant="outline" className="ml-2 text-xs">
+      <CardHeader className="pb-3 px-3 sm:px-6">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+          <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-brand-blue flex-shrink-0" />
+          <span className="truncate">AI Course Assistant</span>
+          <Badge variant="outline" className="ml-1 sm:ml-2 text-xs flex-shrink-0">
             {courseCode}
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-3 sm:px-6">
         {/* Quick Actions */}
         {messages.length === 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="justify-start gap-2 h-auto py-3"
+              className="justify-start gap-2 h-auto py-2 sm:py-3"
               onClick={() => handleQuickAction('explain', `Give me a comprehensive overview of ${courseTitle}. What are the key concepts I need to understand?`)}
             >
-              <Lightbulb className="h-4 w-4 text-yellow-500" />
-              <span className="text-left text-xs">Course Overview</span>
+              <Lightbulb className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+              <span className="text-left text-xs truncate">Course Overview</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="justify-start gap-2 h-auto py-3"
+              className="justify-start gap-2 h-auto py-2 sm:py-3"
               onClick={() => handleQuickAction('quiz', `Generate a practice quiz for ${courseTitle} covering the main topics.`)}
             >
-              <FileQuestion className="h-4 w-4 text-brand-green" />
-              <span className="text-left text-xs">Generate Quiz</span>
+              <FileQuestion className="h-4 w-4 text-brand-green flex-shrink-0" />
+              <span className="text-left text-xs truncate">Generate Quiz</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="justify-start gap-2 h-auto py-3"
+              className="justify-start gap-2 h-auto py-2 sm:py-3"
               onClick={() => handleQuickAction('explain', `What are the most important exam tips for ${courseTitle}? What topics should I focus on?`)}
             >
-              <GraduationCap className="h-4 w-4 text-brand-blue" />
-              <span className="text-left text-xs">Exam Tips</span>
+              <GraduationCap className="h-4 w-4 text-brand-blue flex-shrink-0" />
+              <span className="text-left text-xs truncate">Exam Tips</span>
             </Button>
           </div>
         )}
 
         {/* Chat Messages */}
-        <ScrollArea className="h-[400px] pr-4" ref={scrollRef}>
-          <div className="space-y-4">
+        <ScrollArea className="h-[300px] sm:h-[400px] pr-2 sm:pr-4" ref={scrollRef}>
+          <div className="space-y-3 sm:space-y-4">
             {messages.length === 0 && (
-              <div className="text-center py-12">
-                <Sparkles className="h-12 w-12 text-brand-blue/50 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ask me anything about {courseTitle}</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+              <div className="text-center py-8 sm:py-12">
+                <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 text-brand-blue/50 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-medium mb-2">Ask me anything about {courseTitle}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 px-2">
                   I can explain concepts, generate quizzes, analyze images/documents, and help you prepare for exams.
                 </p>
-                <div className="flex justify-center gap-2">
-                  <Badge variant="outline" className="gap-1">
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Badge variant="outline" className="gap-1 text-xs">
                     <ImageIcon className="h-3 w-3" />
                     Upload Images
                   </Badge>
-                  <Badge variant="outline" className="gap-1">
+                  <Badge variant="outline" className="gap-1 text-xs">
                     <FileText className="h-3 w-3" />
                     Analyze Documents
                   </Badge>
@@ -326,44 +326,44 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex gap-2 sm:gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {msg.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-brand-blue" />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-brand-blue/20 flex items-center justify-center flex-shrink-0">
+                      <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-brand-blue" />
                     </div>
                   )}
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={`max-w-[80%] rounded-lg p-2 sm:p-3 ${
                       msg.role === "user"
                         ? "bg-brand-blue text-white"
                         : "bg-bg-tertiary border border-white/10"
                     }`}
                   >
                     {msg.attachments && msg.attachments.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-2">
+                      <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
                         {msg.attachments.map((att, i) => (
                           <div key={i} className="relative">
                             {att.type.startsWith('image/') && att.preview ? (
                               <img 
                                 src={att.preview} 
                                 alt={att.name} 
-                                className="h-16 w-16 object-cover rounded"
+                                className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded"
                               />
                             ) : (
-                              <div className="h-16 w-16 bg-white/10 rounded flex items-center justify-center">
-                                <FileText className="h-6 w-6" />
+                              <div className="h-12 w-12 sm:h-16 sm:w-16 bg-white/10 rounded flex items-center justify-center">
+                                <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                               </div>
                             )}
                           </div>
                         ))}
                       </div>
                     )}
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-xs sm:text-sm whitespace-pre-wrap">{msg.content}</p>
                   </div>
                   {msg.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-brand-green/20 flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-brand-green" />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-brand-green/20 flex items-center justify-center flex-shrink-0">
+                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-brand-green" />
                     </div>
                   )}
                 </motion.div>
@@ -374,12 +374,12 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex gap-3 justify-start"
+                className="flex gap-2 sm:gap-3 justify-start"
               >
-                <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-4 w-4 text-brand-blue" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-brand-blue/20 flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-brand-blue" />
                 </div>
-                <div className="bg-bg-tertiary border border-white/10 rounded-lg p-3">
+                <div className="bg-bg-tertiary border border-white/10 rounded-lg p-2 sm:p-3">
                   <Loader2 className="h-4 w-4 animate-spin text-brand-blue" />
                 </div>
               </motion.div>
@@ -389,27 +389,27 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
 
         {/* Attached Files Preview */}
         {attachedFiles.length > 0 && (
-          <div className="flex flex-wrap gap-2 p-2 bg-bg-tertiary rounded-lg border border-white/10">
+          <div className="flex flex-wrap gap-2 p-2 bg-bg-tertiary rounded-lg border border-white/10 overflow-x-auto">
             {attachedFiles.map((f, index) => (
-              <div key={index} className="relative group">
+              <div key={index} className="relative group flex-shrink-0">
                 {f.preview ? (
                   <img 
                     src={f.preview} 
                     alt={f.file.name} 
-                    className="h-16 w-16 object-cover rounded"
+                    className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded"
                   />
                 ) : (
-                  <div className="h-16 w-16 bg-white/10 rounded flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-muted-foreground" />
+                  <div className="h-12 w-12 sm:h-16 sm:w-16 bg-white/10 rounded flex items-center justify-center">
+                    <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground" />
                   </div>
                 )}
                 <button
                   onClick={() => removeFile(index)}
-                  className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-destructive text-white rounded-full p-0.5 sm:p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-2 w-2 sm:h-3 sm:w-3" />
                 </button>
-                <p className="text-xs text-center mt-1 truncate max-w-[64px]">{f.file.name}</p>
+                <p className="text-[10px] sm:text-xs text-center mt-1 truncate max-w-[48px] sm:max-w-[64px]">{f.file.name}</p>
               </div>
             ))}
           </div>
@@ -417,7 +417,7 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
 
         {/* Input Area */}
         <div className="space-y-2">
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             <input
               type="file"
               ref={fileInputRef}
@@ -441,8 +441,9 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
               title="Upload file"
+              className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0"
             >
-              <Upload className="h-4 w-4" />
+              <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="outline"
@@ -450,15 +451,16 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
               onClick={() => cameraInputRef.current?.click()}
               disabled={isLoading}
               title="Take photo"
+              className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
             
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about course concepts, upload an image to analyze, or request a quiz..."
-              className="min-h-[60px] max-h-[120px] resize-none bg-bg-tertiary border-white/10 flex-1"
+              placeholder="Ask a question..."
+              className="min-h-[50px] sm:min-h-[60px] max-h-[100px] sm:max-h-[120px] resize-none bg-bg-tertiary border-white/10 flex-1 text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -470,17 +472,18 @@ const AIAssistant = ({ courseCode, courseTitle }: AIAssistantProps) => {
             <Button
               onClick={handleSend}
               disabled={((!input.trim() && attachedFiles.length === 0) || isLoading)}
-              className="self-end"
+              className="self-end h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0"
+              size="icon"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Upload images or PDFs for analysis • Snap photos of notes or textbooks
+          <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
+            Upload images or PDFs for analysis • Snap photos of notes
           </p>
         </div>
       </CardContent>
