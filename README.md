@@ -1,4 +1,4 @@
-# Learnwise Academics
+# Lumora
 
 ## Project Description
 
