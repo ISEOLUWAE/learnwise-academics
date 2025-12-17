@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import DepartmentDashboard from "./pages/DepartmentDashboard";
+import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/department" element={<DepartmentDashboard />} />
+            <Route path="/profile" element={<ProfileSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

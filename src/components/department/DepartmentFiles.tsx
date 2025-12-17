@@ -250,12 +250,12 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
         <div className="flex justify-end">
           <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Upload className="h-4 w-4 mr-2" />
                 Upload File
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-lg mx-auto">
               <DialogHeader>
                 <DialogTitle>Upload Department File</DialogTitle>
                 <DialogDescription>
@@ -278,6 +278,7 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
                   type="file"
                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  className="text-sm"
                 />
                 <Button 
                   onClick={handleUpload} 
@@ -310,37 +311,39 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
         <div className="grid gap-4">
           {files.map((file) => (
             <Card key={file.id} className="bg-bg-secondary/50 border-white/10">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <FileText className="h-8 w-8 text-brand-blue mt-1" />
-                    <div className="flex-1">
-                      <h4 className="font-medium">{file.title}</h4>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-brand-blue flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm sm:text-base truncate">{file.title}</h4>
                       {file.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{file.description}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{file.description}</p>
                       )}
-                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                        <span>@{file.uploader?.username || file.uploader?.full_name || 'Unknown'}</span>
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-2 text-xs text-muted-foreground">
+                        <span className="truncate max-w-[100px]">@{file.uploader?.username || file.uploader?.full_name || 'Unknown'}</span>
                         <span>•</span>
                         <span>{format(new Date(file.created_at), 'PP')}</span>
-                        <span>•</span>
-                        <span>{file.file_name}</span>
                       </div>
+                      <p className="text-xs text-muted-foreground truncate mt-1">{file.file_name}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => openAIChat(file)}
+                      className="text-xs"
                     >
-                      <Bot className="h-4 w-4 mr-1" />
-                      AI Chat
+                      <Bot className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden sm:inline">AI Chat</span>
+                      <span className="sm:hidden">AI</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => window.open(file.file_url, '_blank')}
+                      className="text-xs"
                     >
                       View
                     </Button>
@@ -363,44 +366,45 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
 
       {/* AI Chat Modal */}
       <Dialog open={showAIChat} onOpenChange={setShowAIChat}>
-        <DialogContent className="max-w-2xl h-[80vh] flex flex-col">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[85vh] sm:h-[80vh] flex flex-col mx-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-brand-blue" />
-              AI Assistant - {currentFile?.title}
+            <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-brand-blue flex-shrink-0" />
+              <span className="truncate">AI Assistant - {currentFile?.title}</span>
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 pr-2 sm:pr-4" ref={scrollRef}>
+            <div className="space-y-3 sm:space-y-4">
               {messages.map((message, index) => (
                 <div
                   key={index}
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
                       message.role === 'user'
                         ? 'bg-brand-blue text-white'
                         : 'bg-white/10'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                    <p className="whitespace-pre-wrap text-xs sm:text-sm">{message.content}</p>
                   </div>
                 </div>
               ))}
             </div>
           </ScrollArea>
 
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-3 sm:mt-4">
             <Input
               placeholder="Ask about this file..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
               disabled={isStreaming}
+              className="text-sm"
             />
-            <Button onClick={sendMessage} disabled={isStreaming || !chatInput.trim()}>
+            <Button onClick={sendMessage} disabled={isStreaming || !chatInput.trim()} size="sm">
               {isStreaming ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
