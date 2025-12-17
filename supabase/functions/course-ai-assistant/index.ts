@@ -11,32 +11,46 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, courseContext, action } = await req.json();
+    const { messages, courseContext, action, fileName, fileUrl } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build system prompt based on action
-    let systemPrompt = `You are an AI Course Assistant for the course "${courseContext?.title || 'this course'}" (${courseContext?.code || ''}).
-Your role is to help students understand course material, explain concepts, and prepare for exams.
+    // Build system prompt based on context
+    let systemPrompt = `You are an AI Assistant helping students with course materials and department files.
+Your role is to help students understand content, explain concepts, and prepare for exams.
 
 Guidelines:
 - Explain concepts in simple, step-by-step terms
-- When analyzing past questions, explain why correct answers are correct and why incorrect options are wrong
-- If the user uploads material (PDF, images), analyze it and answer questions based on its content
+- When analyzing uploaded files, carefully read and analyze the content provided
+- Answer questions based ONLY on the file content provided
+- If the user uploads material (PDF, documents, images), analyze it and answer questions based on its content
 - Be encouraging and supportive
 - Use examples and analogies to clarify complex topics
 - When generating quizzes, create questions strictly based on provided material
 - Never hallucinate or make up information not in the provided content
-- Format responses with clear headings and bullet points when helpful`;
+- Format responses with clear headings and bullet points when helpful
+- Always reference the file you're analyzing`;
+
+    if (courseContext?.title) {
+      systemPrompt += `
+
+CONTEXT: You are assisting with a course titled "${courseContext.title}"${courseContext.code ? ` (${courseContext.code})` : ''}.`;
+    }
+
+    if (fileName) {
+      systemPrompt += `
+
+IMPORTANT: The user has uploaded a file named "${fileName}". The file content has been provided below. Use this content to answer all questions accurately. If the user asks about something not in the file, let them know.`;
+    }
 
     if (action === 'quiz') {
       systemPrompt += `
 
 QUIZ GENERATION MODE:
-Generate a quiz with 5-10 multiple choice questions based ONLY on the material provided.
+Generate a quiz with 5-10 multiple choice questions based ONLY on the material provided in the file.
 Format each question as:
 Q1: [Question text]
 A) [Option A]
@@ -46,18 +60,19 @@ D) [Option D]
 Answer: [Correct letter]
 Explanation: [Why this is correct]
 
-Make questions progressively harder. Focus on key concepts.`;
+Make questions progressively harder. Focus on key concepts from the file.`;
     }
 
     if (action === 'explain') {
       systemPrompt += `
 
 EXPLANATION MODE:
-Provide a detailed, beginner-friendly explanation.
+Provide a detailed, beginner-friendly explanation based on the file content.
 - Start with the basics
 - Build up to more complex aspects
 - Use real-world analogies
-- Include examples where helpful`;
+- Include examples where helpful
+- Reference specific parts of the file`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

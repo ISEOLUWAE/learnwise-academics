@@ -163,7 +163,7 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
     setCurrentFile(file);
     setMessages([{
       role: 'assistant',
-      content: `I'm ready to help you with "${file.title}". You can ask me to:\n\n• Summarize the content\n• Explain specific concepts\n• Create quiz questions\n• Answer any questions about the file\n\nWhat would you like to know?`
+      content: `I'm ready to help you with "${file.title}". I can see the file and will use it to answer your questions. You can ask me to:\n\n• Summarize the content\n• Explain specific concepts\n• Create quiz questions\n• Answer any questions about the file\n\nWhat would you like to know?`
     }]);
     setShowAIChat(true);
   };
@@ -177,6 +177,28 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
     setIsStreaming(true);
 
     try {
+      // Fetch file content
+      let fileContent = '';
+      try {
+        const fileResponse = await fetch(currentFile.file_url);
+        const blob = await fileResponse.blob();
+        
+        // For text files, read as text
+        if (currentFile.file_type.includes('text') || currentFile.file_type === 'application/pdf' || currentFile.file_name.endsWith('.txt') || currentFile.file_name.endsWith('.md')) {
+          fileContent = await blob.text();
+        } else {
+          // For binary files, convert to base64
+          const reader = new FileReader();
+          fileContent = await new Promise((resolve) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch (err) {
+        console.warn('Could not fetch file content:', err);
+        fileContent = `[File: ${currentFile.file_name} - could not read content]`;
+      }
+
       const response = await fetch(
         `https://cgfiwjbegervslftrvaz.supabase.co/functions/v1/course-ai-assistant`,
         {
@@ -188,8 +210,13 @@ export const DepartmentFiles = ({ spaceId, canManage }: DepartmentFilesProps) =>
           body: JSON.stringify({
             messages: [
               ...messages.map(m => ({ role: m.role, content: m.content })),
-              { role: 'user', content: `[Context: This is about a department file titled "${currentFile.title}" (${currentFile.file_name}). ${currentFile.description ? `Description: ${currentFile.description}` : ''}]\n\n${userMessage}` }
+              { 
+                role: 'user', 
+                content: `[FILE CONTEXT]\nFile: ${currentFile.title}\nFilename: ${currentFile.file_name}\nType: ${currentFile.file_type}\n${currentFile.description ? `Description: ${currentFile.description}\n` : ''}\n\nFile Content:\n${fileContent}\n\n[END FILE CONTEXT]\n\nUser Question: ${userMessage}` 
+              }
             ],
+            fileUrl: currentFile.file_url,
+            fileName: currentFile.file_name,
           }),
         }
       );
