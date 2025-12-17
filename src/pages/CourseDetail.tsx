@@ -26,8 +26,7 @@ import Leaderboard from "@/components/course/Leaderboard";
 import Community from "@/components/course/Community";
 import AIAssistant from "@/components/course/AIAssistant";
 import { supabase } from "@/integrations/supabase/client";
-import { AdViewerModal } from "@/components/ads/AdViewerModal";
-import { useAdVerification } from "@/hooks/useAdVerification";
+// ads removed from course detail per user request
 import { toast } from "sonner";
 
 interface Course {
@@ -77,15 +76,13 @@ interface LeaderboardEntry {
 const CourseDetail = () => {
   const { courseCode } = useParams();
   const { user, loading } = useAuth();
-  const { hasWatchedAds, loading: adLoading, markAdsAsWatched } = useAdVerification();
   const [course, setCourse] = useState<Course | null>(null);
   const [textbooks, setTextbooks] = useState<Textbook[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [pastQuestions, setPastQuestions] = useState<PastQuestion[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [courseLoading, setCourseLoading] = useState(true);
-  const [showAdModal, setShowAdModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'download' | 'quiz' | null>(null);
+  // ads removed: no ad state required
 
   useEffect(() => {
     if (courseCode) {
@@ -233,35 +230,12 @@ const CourseDetail = () => {
   };
 
   const handleDownloadClick = (url: string) => {
-    if (!hasWatchedAds) {
-      setPendingAction('download');
-      setShowAdModal(true);
-    } else {
-      window.open(url, '_blank');
-    }
+    window.open(url, '_blank');
   };
 
-  const handleQuizAccess = () => {
-    if (!hasWatchedAds) {
-      setPendingAction('quiz');
-      setShowAdModal(true);
-      return false;
-    }
-    return true;
-  };
+  const handleQuizAccess = () => true;
 
-  const handleAdComplete = () => {
-    markAdsAsWatched();
-    setShowAdModal(false);
-    
-    if (pendingAction === 'download') {
-      toast.success("You can now download files!");
-    } else if (pendingAction === 'quiz') {
-      toast.success("You can now start the quiz!");
-    }
-    
-    setPendingAction(null);
-  };
+  // ads removed: no ad completion handler
 
   return (
     <Layout>
@@ -314,7 +288,7 @@ const CourseDetail = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <Tabs defaultValue="overview" className="space-y-8">
-                <TabsList className="flex flex-wrap w-full justify-center gap-1 h-auto p-1.5 bg-bg-secondary/50 backdrop-blur border border-white/10 rounded-lg">
+                <TabsList className="bg-bg-secondary/50 border border-white/10 flex flex-wrap h-auto gap-1 p-1.5 overflow-x-auto max-w-full rounded-lg backdrop-blur">
                   <TabsTrigger 
                     value="overview" 
                     className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
@@ -492,8 +466,6 @@ const CourseDetail = () => {
                   <QuizComponent 
                     courseId={course.id} 
                     courseTitle={course.title}
-                    hasWatchedAds={hasWatchedAds}
-                    onQuizAccess={handleQuizAccess}
                   />
                 </TabsContent>
 
@@ -518,13 +490,7 @@ const CourseDetail = () => {
         </section>
       </div>
 
-      <AdViewerModal 
-        open={showAdModal}
-        onClose={() => setShowAdModal(false)}
-        onComplete={handleAdComplete}
-        video1Url=""
-        video2Url=""
-      />
+      {/* ads removed from course detail */}
     </Layout>
   );
 };

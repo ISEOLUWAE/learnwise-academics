@@ -268,7 +268,7 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
     setTimeRemaining(0);
   };
 
-  const renderQuestionContent = (question: Question, isResult: boolean = false) => {
+  const renderQuestionContent = (question: Question, isResult: boolean = false, userAnswerIndex?: number) => {
     const isMathCourse = courseTitle.toLowerCase().includes('math') || courseTitle.toLowerCase().includes('physics');
     const isCodeCourse = courseTitle.toLowerCase().includes('computer') || courseTitle.toLowerCase().includes('programming');
 
@@ -285,14 +285,14 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
         </div>
         
         <RadioGroup 
-          value={isResult ? question.correct_answer.toString() : selectedAnswer} 
+          value={isResult ? (typeof userAnswerIndex === 'number' ? userAnswerIndex.toString() : question.correct_answer.toString()) : selectedAnswer} 
           onValueChange={!isResult ? setSelectedAnswer : undefined}
           disabled={isResult}
           className="space-y-3"
         >
           {question.options.map((option, index) => {
             const isCorrectAnswer = isResult && index === question.correct_answer;
-            const isUserWrongAnswer = isResult && answers[currentQuestion] === index && index !== question.correct_answer;
+            const isUserWrongAnswer = isResult && typeof userAnswerIndex === 'number' && userAnswerIndex === index && index !== question.correct_answer;
             
             return (
               <div key={index} className="flex items-center space-x-2">
@@ -487,7 +487,7 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
                           </div>
                         </CardHeader>
                         <CardContent>
-                          {renderQuestionContent(question, true)}
+                          {renderQuestionContent(question, true, answers[index])}
                         </CardContent>
                       </Card>
                     ))}
