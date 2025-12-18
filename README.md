@@ -2,7 +2,7 @@
 
 ## Project Description
 
-Lumora is a web platform for students and department administrators to manage academic activities, access course materials, and collaborate. The app supports department spaces with announcements, timetables, shared files, cohort quizzes, and voting/elections. Students can take quizzes, appear on leaderboards, access textbooks and course materials, connect and interact with other students in the same course, and use an AI assistant on each course detail page to help explain concepts. The platform also supports GPA/CGPA calculations for students. For urgent department-wide announcements the system can trigger phone calls via Twilio.
+Lumora is a web platform for students and department administrators to manage academic activities, access course materials, and collaborate. The app supports department spaces with announcements, timetables, shared files, cohort quizzes, and voting/elections. Students can take quizzes, appear on leaderboards, access textbooks and course materials, connect and interact with other students in the same course, and use an AI assistant (powered by Google Gemini via an AI gateway) on each course detail page to help explain concepts. The platform also supports GPA/CGPA calculations for students. For urgent department-wide announcements the system can trigger phone calls via Twilio.
 
 ## Features
 
@@ -50,6 +50,8 @@ Notes:
 - Framer Motion (animations)
 - Lucide Icons
 - Twilio (for urgent announcement phone calls)
+- Google Gemini 2.5 Flash (via Lovable AI Gateway) – AI assistant & document analysis
+
 
 ## Team Members
 - Elebiemayo Iseoluwa Emmanuel
