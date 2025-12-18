@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Crown, Shield, UserCircle, Loader2, Phone, PhoneCall, AlertTriangle, LogOut } from 'lucide-react';
+import { Users, Crown, Shield, UserCircle, Loader2, Phone, PhoneCall, AlertTriangle, LogOut, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,6 +48,7 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
   const [userProfile, setUserProfile] = useState<{ phone_number: string | null } | null>(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [leavingDepartment, setLeavingDepartment] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchMembers();
@@ -231,7 +232,6 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
   };
 
   const getDisplayName = (member: Member) => {
-    // Prioritize username for display
     if (member.profiles?.username && member.profiles.username.trim()) {
       return member.profiles.username;
     }
@@ -292,6 +292,16 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
 
   const canManageRoles = isDeptAdmin || isClassRep;
 
+  // Filter members based on search query
+  const filteredMembers = members.filter((member) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    const username = member.profiles?.username?.toLowerCase() || '';
+    const fullName = member.profiles?.full_name?.toLowerCase() || '';
+    const phone = member.profiles?.phone_number || '';
+    return username.includes(query) || fullName.includes(query) || phone.includes(query);
+  });
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -300,9 +310,9 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
     );
   }
 
-  const admins = members.filter((m) => m.role === 'dept_admin');
-  const classReps = members.filter((m) => m.role === 'class_rep');
-  const students = members.filter((m) => m.role === 'student');
+  const admins = filteredMembers.filter((m) => m.role === 'dept_admin');
+  const classReps = filteredMembers.filter((m) => m.role === 'class_rep');
+  const students = filteredMembers.filter((m) => m.role === 'student');
   const membersWithPhones = members.filter(m => m.profiles?.phone_number);
 
   return (
@@ -359,6 +369,16 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
             <Users className="h-5 w-5 text-brand-blue" />
             Department Members ({members.length})
           </CardTitle>
+          {/* Search Bar */}
+          <div className="relative mt-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by username, name, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-white/5 border-white/10"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {/* Admins Section */}
@@ -425,6 +445,10 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
                 ))}
               </div>
             </div>
+          )}
+
+          {filteredMembers.length === 0 && searchQuery && (
+            <p className="text-center text-muted-foreground py-4">No members found matching "{searchQuery}"</p>
           )}
 
           {members.length === 0 && (
@@ -522,7 +546,7 @@ export const DepartmentMembers = ({ spaceId, isDeptAdmin, isClassRep }: Departme
               Leave Department
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to leave this department? You can join a different department after leaving.
+              Are you sure you want to leave this department? If you rejoin, you will retain your previous role (Class Rep or Admin) unless you were voted out.
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 mt-4">
@@ -572,33 +596,34 @@ const MemberRow = ({
   getDisplayName,
   getInitials 
 }: MemberRowProps) => {
-  // Class rep can change anyone's role (including demoting admins)
-  // Dept admin cannot change class rep's role
   const canEditThisMember = canManageRoles && (
-    isClassRep || // Class rep can edit anyone
-    (member.role !== 'class_rep') // Dept admin can't edit class rep
+    isClassRep || 
+    (member.role !== 'class_rep')
   );
   
-  // Don't allow changing your own role
   const isSelf = member.user_id === currentUserId;
 
   return (
-    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-      <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-white/5 rounded-lg gap-3">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={member.profiles?.avatar_url || undefined} />
           <AvatarFallback className="bg-brand-blue/20 text-brand-blue">
             {getInitials(member)}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="font-medium truncate">@{getDisplayName(member)}</p>
-            {member.profiles?.phone_number && (
-              <Phone className="h-3 w-3 text-green-400" />
-            )}
             {getRoleBadge(member.role)}
           </div>
+          {/* Show phone number */}
+          {member.profiles?.phone_number && (
+            <p className="text-xs text-green-400 flex items-center gap-1 mt-0.5">
+              <Phone className="h-3 w-3" />
+              {member.profiles.phone_number}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             Joined {format(new Date(member.joined_at), 'PP')}
           </p>
@@ -609,7 +634,7 @@ const MemberRow = ({
           value={member.role}
           onValueChange={(value) => onRoleChange(member.id, value as any)}
         >
-          <SelectTrigger className="w-[130px] h-8">
+          <SelectTrigger className="w-full sm:w-[130px] h-8">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -114,13 +114,59 @@ serve(async (req) => {
           );
         }
 
-        // Add user as member
+        // Check if user was previously in this department with a higher role
+        // Look up previous membership history (using audit or check if they were the creator)
+        let roleToAssign: 'student' | 'class_rep' | 'dept_admin' = 'student';
+        
+        // Check if user was the original creator (should be dept_admin)
+        if (existingSpace.created_by === user.id) {
+          roleToAssign = 'dept_admin';
+          console.log(`User ${user.id} is the original creator, restoring as dept_admin`);
+        } else {
+          // Check if there's currently no class_rep and user was previously one
+          // We'll check the current votes to see if this user won a previous election
+          const { data: previousVoteWin } = await supabaseClient
+            .from('vote_candidates')
+            .select('id, vote_id, vote_count, department_votes!inner(department_space_id, ended_at)')
+            .eq('user_id', user.id)
+            .eq('department_votes.department_space_id', existingSpace.id)
+            .not('department_votes.ended_at', 'is', null)
+            .order('vote_count', { ascending: false })
+            .limit(1);
+
+          if (previousVoteWin && previousVoteWin.length > 0) {
+            // Check if they were the winner of a completed election
+            const voteId = previousVoteWin[0].vote_id;
+            const { data: allCandidates } = await supabaseClient
+              .from('vote_candidates')
+              .select('user_id, vote_count')
+              .eq('vote_id', voteId)
+              .order('vote_count', { ascending: false });
+
+            if (allCandidates && allCandidates.length > 0 && allCandidates[0].user_id === user.id) {
+              // User won this election, check if there's currently no class_rep
+              const { data: currentClassRep } = await supabaseClient
+                .from('department_members')
+                .select('id')
+                .eq('department_space_id', existingSpace.id)
+                .eq('role', 'class_rep')
+                .limit(1);
+
+              if (!currentClassRep || currentClassRep.length === 0) {
+                roleToAssign = 'class_rep';
+                console.log(`User ${user.id} was previous election winner with no current class_rep, restoring as class_rep`);
+              }
+            }
+          }
+        }
+
+        // Add user as member with appropriate role
         const { error: joinError } = await supabaseClient
           .from('department_members')
           .insert({
             user_id: user.id,
             department_space_id: existingSpace.id,
-            role: 'student'
+            role: roleToAssign
           });
 
         if (joinError) {
@@ -131,12 +177,17 @@ serve(async (req) => {
           );
         }
 
+        const roleMessage = roleToAssign === 'student' 
+          ? 'Successfully joined department space'
+          : `Successfully rejoined as ${roleToAssign === 'dept_admin' ? 'Admin' : 'Class Rep'}`;
+
         return new Response(
           JSON.stringify({ 
             success: true, 
-            message: 'Successfully joined department space',
+            message: roleMessage,
             spaceId: existingSpace.id,
-            isNew: false
+            isNew: false,
+            role: roleToAssign
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -322,6 +373,16 @@ serve(async (req) => {
     if (action === 'leave_department') {
       const { spaceId } = body;
       
+      // Get current role before leaving (for logging)
+      const { data: currentMember } = await supabaseClient
+        .from('department_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('department_space_id', spaceId)
+        .single();
+
+      console.log(`User ${user.id} leaving department ${spaceId} with role: ${currentMember?.role}`);
+      
       // Delete membership
       const { error } = await supabaseClient
         .from('department_members')
@@ -361,6 +422,13 @@ serve(async (req) => {
         );
       }
 
+      // Demote current class_rep to student if voting is being restarted
+      await supabaseClient
+        .from('department_members')
+        .update({ role: 'student' })
+        .eq('department_space_id', spaceId)
+        .eq('role', 'class_rep');
+
       // Reset all candidates vote counts
       await supabaseClient
         .from('vote_candidates')
@@ -384,7 +452,7 @@ serve(async (req) => {
         .eq('id', voteId);
 
       return new Response(
-        JSON.stringify({ success: true, message: 'Voting has been reset' }),
+        JSON.stringify({ success: true, message: 'Voting has been reset and previous class rep demoted' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
