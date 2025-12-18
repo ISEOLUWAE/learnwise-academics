@@ -40,6 +40,15 @@ npm run dev
 Notes:
 - The project uses Supabase for auth, database and storage. Configure environment variables (e.g., `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) or a `.env` file as required by your environment.
 
+## Deployment
+
+- Local development: `npm run dev`
+- Production: deployed on Vercel  
+  🔗 https://lumora1.vercel.app
+
+Environment variables are configured per environment (local `.env` and Vercel project settings).
+
+
 ## Tech Stack
 
 - Vite
