@@ -169,7 +169,8 @@ serve(async (req) => {
 
         console.log(`Calling ${member.full_name || member.username} at ${phoneNumber}`);
 
-        const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${message}. I repeat: ${message}</Say></Response>`;
+        const safeMessage = escapeTwiml(message);
+        const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${safeMessage}. I repeat: ${safeMessage}</Say></Response>`;
         
         const formData = new URLSearchParams();
         formData.append('To', phoneNumber);
