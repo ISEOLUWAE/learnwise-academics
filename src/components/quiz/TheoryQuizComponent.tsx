@@ -150,6 +150,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
           action: 'grade',
           questions,
           answers,
+          referenceAnswers: referenceAnswers.length > 0 ? referenceAnswers : undefined,
           courseTitle,
           courseCode,
           courseId,
