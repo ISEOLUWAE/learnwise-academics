@@ -153,6 +153,22 @@ CRITICAL RULES:
     // === GRADE ANSWERS ===
     const { questions, answers, referenceAnswers, courseTitle, courseCode, courseId, courseOverview } = body;
 
+    // Fetch materials content for grading context
+    const { data: gradeMaterials } = await supabaseClient
+      .from('materials')
+      .select('title, content_text')
+      .eq('course_id', courseId);
+
+    const { data: gradeTextbooks } = await supabaseClient
+      .from('textbooks')
+      .select('title, author')
+      .eq('course_id', courseId);
+
+    const materialsGradeContent = (gradeMaterials || [])
+      .filter(m => m.content_text)
+      .map(m => `--- ${m.title} ---\n${m.content_text}`)
+      .join('\n\n');
+
     const gradingPrompt = questions.map((q: string, i: number) => {
       let block = `Question ${i + 1}: ${q}\nStudent's Answer: ${answers[i] || "(No answer provided)"}`;
       if (referenceAnswers && referenceAnswers[i]) {
@@ -164,6 +180,9 @@ CRITICAL RULES:
     let contextInfo = `Course: ${courseTitle} (${courseCode})`;
     if (courseOverview) {
       contextInfo += `\n\nCOURSE CONTENT FOR REFERENCE:\n${courseOverview}`;
+    }
+    if (materialsGradeContent) {
+      contextInfo += `\n\nLECTURE MATERIALS FOR REFERENCE:\n${materialsGradeContent}`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
