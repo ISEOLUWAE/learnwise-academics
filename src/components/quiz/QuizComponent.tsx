@@ -196,10 +196,14 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
   const handleSubmit = async () => {
     setTimerActive(false);
     
-    // Save current answer before submitting
-    const finalAnswers = [...answers];
-    if (selectedAnswer !== "") {
-      finalAnswers[currentQuestion] = parseInt(selectedAnswer);
+    // Use refs for the most current state (important for auto-submit from event listeners)
+    const currentAnswers = [...answersRef.current];
+    const currentSelectedAnswer = selectedAnswerRef.current;
+    const currentQuestionIdx = currentQuestionRef.current;
+    
+    if (currentSelectedAnswer !== "") {
+      currentAnswers[currentQuestionIdx] = parseInt(currentSelectedAnswer);
+    }
     }
     
     // Calculate score - count correct answers out of TOTAL questions
