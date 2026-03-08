@@ -476,15 +476,14 @@ const CourseDetail = () => {
                   />
                 </TabsContent>
 
-                {parseInt(course.level) >= 200 && (
-                  <TabsContent value="theory-quiz" className="space-y-6">
-                    <TheoryQuizComponent 
-                      courseId={course.id} 
-                      courseTitle={course.title}
-                      courseCode={course.code}
-                    />
-                  </TabsContent>
-                )}
+                <TabsContent value="theory-quiz" className="space-y-6">
+                  <TheoryQuizComponent 
+                    courseId={course.id} 
+                    courseTitle={course.title}
+                    courseCode={course.code}
+                    courseOverview={course.overview}
+                  />
+                </TabsContent>
 
                 <TabsContent value="history" className="space-y-6">
                   <QuizHistory courseId={course.id} courseTitle={course.title} />
