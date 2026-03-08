@@ -739,6 +739,7 @@ export type Database = {
       }
       materials: {
         Row: {
+          content_text: string | null
           course_id: string
           created_at: string
           duration: string | null
@@ -749,6 +750,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          content_text?: string | null
           course_id: string
           created_at?: string
           duration?: string | null
@@ -759,6 +761,7 @@ export type Database = {
           type: string
         }
         Update: {
+          content_text?: string | null
           course_id?: string
           created_at?: string
           duration?: string | null
