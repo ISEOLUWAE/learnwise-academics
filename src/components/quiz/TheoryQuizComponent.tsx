@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ interface TheoryQuizProps {
   courseId: string;
   courseTitle: string;
   courseCode: string;
+  courseOverview?: string;
 }
 
 interface GradeResult {
@@ -25,108 +25,7 @@ interface GradeResult {
   feedback: string;
 }
 
-// Theory question banks by course topic area
-const theoryQuestionBank: Record<string, string[]> = {
-  "software": [
-    "Explain the Software Development Life Cycle (SDLC) and compare at least two development methodologies.",
-    "Describe the principles of SOLID in object-oriented design and give an example for each.",
-    "What is the difference between functional and non-functional requirements? Give three examples of each.",
-    "Explain the concept of software testing. Differentiate between unit testing, integration testing, and system testing.",
-    "Discuss the importance of version control systems in software development. Explain branching strategies.",
-    "What are design patterns? Explain the Singleton and Observer patterns with examples.",
-    "Describe the Agile methodology. What are its advantages over the Waterfall model?",
-    "Explain the concept of code refactoring. Why is it important and when should it be done?",
-    "What is DevOps? Explain how CI/CD pipelines improve software delivery.",
-    "Discuss software architecture patterns: monolithic, microservices, and serverless.",
-  ],
-  "database": [
-    "Explain normalization in database design. Describe 1NF, 2NF, and 3NF with examples.",
-    "What is the difference between SQL and NoSQL databases? When would you choose one over the other?",
-    "Explain ACID properties of database transactions with real-world examples.",
-    "Describe the Entity-Relationship (ER) model. How do you convert an ER diagram to relational tables?",
-    "What is database indexing? Explain how B-tree indexes work and their impact on query performance.",
-    "Explain the concept of database concurrency control. Discuss locking mechanisms.",
-    "What is a distributed database? Discuss the CAP theorem and its implications.",
-    "Explain data warehousing concepts. Differentiate between OLTP and OLAP systems.",
-    "Describe SQL joins: INNER, LEFT, RIGHT, FULL OUTER. Give an example query for each.",
-    "What is database security? Discuss SQL injection and how to prevent it.",
-  ],
-  "network": [
-    "Compare the OSI and TCP/IP reference models. Explain the function of each layer.",
-    "What is the difference between TCP and UDP? Give use cases for each protocol.",
-    "Explain IP addressing and subnetting. Calculate the subnet mask for a network with 500 hosts.",
-    "Describe the process of DNS resolution. What happens when you type a URL in a browser?",
-    "What are firewalls? Explain the difference between packet filtering and application-level gateways.",
-    "Explain the concept of routing. Compare distance-vector and link-state routing algorithms.",
-    "What is network security? Discuss common attacks: DDoS, man-in-the-middle, phishing.",
-    "Describe wireless network standards (802.11). Discuss security protocols: WEP, WPA, WPA2, WPA3.",
-    "Explain the concept of VPN. How does it ensure secure communication over public networks?",
-    "What is cloud networking? Discuss virtual networks and software-defined networking (SDN).",
-  ],
-  "ai": [
-    "Explain the difference between supervised, unsupervised, and reinforcement learning with examples.",
-    "What is a neural network? Describe the architecture of a feedforward neural network.",
-    "Explain the concept of overfitting in machine learning. What techniques can prevent it?",
-    "Describe the decision tree algorithm. What are its advantages and limitations?",
-    "What is natural language processing (NLP)? Discuss its main applications and challenges.",
-    "Explain the concept of computer vision. How do convolutional neural networks work?",
-    "What are expert systems? Describe their components and give an application example.",
-    "Discuss the ethical implications of artificial intelligence in society.",
-    "Explain gradient descent optimization. What is the difference between batch, mini-batch, and stochastic?",
-    "What is transfer learning? Explain how pre-trained models can be used for new tasks.",
-  ],
-  "security": [
-    "Explain the CIA triad in information security. Give examples of threats to each component.",
-    "What is cryptography? Compare symmetric and asymmetric encryption with examples.",
-    "Describe common web security vulnerabilities: XSS, CSRF, SQL Injection. How can each be prevented?",
-    "What is digital forensics? Describe the forensic investigation process.",
-    "Explain the concept of access control. Compare DAC, MAC, and RBAC models.",
-    "What is a hash function? Explain its properties and applications in security.",
-    "Describe malware types: viruses, worms, trojans, ransomware. How do antivirus systems detect them?",
-    "What is a security policy? Discuss its components and importance in an organization.",
-    "Explain public key infrastructure (PKI). How do digital certificates work?",
-    "Discuss social engineering attacks. What are the best practices to defend against them?",
-  ],
-  "general_cs": [
-    "Explain the concept of computational complexity. What is the difference between P and NP problems?",
-    "Describe the different types of operating system scheduling algorithms with their pros and cons.",
-    "What is virtualization? Explain the difference between Type 1 and Type 2 hypervisors.",
-    "Explain the concept of parallel computing. Discuss Amdahl's Law and its implications.",
-    "What is the Internet of Things (IoT)? Discuss its architecture, applications, and security challenges.",
-    "Describe cloud computing service models: IaaS, PaaS, SaaS. Give examples of each.",
-    "Explain the concept of blockchain technology. How does consensus work in distributed ledgers?",
-    "What are formal methods in software development? Discuss their advantages and limitations.",
-    "Explain the MapReduce programming model. How is it used in big data processing?",
-    "Describe the concept of Human-Computer Interaction. What are Nielsen's 10 usability heuristics?",
-  ],
-};
-
-function getQuestionsForCourse(courseTitle: string, courseCode: string, count: number): string[] {
-  const title = courseTitle.toLowerCase();
-  const code = courseCode.toLowerCase();
-  
-  let pools: string[] = [];
-  
-  if (title.includes('software') || code.includes('301') || code.includes('302')) {
-    pools = [...theoryQuestionBank.software];
-  } else if (title.includes('database') || code.includes('206') || code.includes('402')) {
-    pools = [...theoryQuestionBank.database];
-  } else if (title.includes('network') || code.includes('305')) {
-    pools = [...theoryQuestionBank.network];
-  } else if (title.includes('artificial') || title.includes('machine learning') || code.includes('307') || code.includes('310')) {
-    pools = [...theoryQuestionBank.ai];
-  } else if (title.includes('security') || code.includes('403')) {
-    pools = [...theoryQuestionBank.security];
-  } else {
-    pools = [...theoryQuestionBank.general_cs];
-  }
-  
-  // Shuffle and pick
-  const shuffled = pools.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, Math.min(count, shuffled.length));
-}
-
-const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizProps) => {
+const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview }: TheoryQuizProps) => {
   const { user } = useAuth();
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -134,6 +33,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
   const [answers, setAnswers] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [grading, setGrading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [grades, setGrades] = useState<GradeResult[]>([]);
   const [totalScore, setTotalScore] = useState(0);
   const [maxTotal, setMaxTotal] = useState(0);
@@ -159,21 +59,56 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
     return () => clearInterval(interval);
   });
 
-  const startQuiz = () => {
+  const startQuiz = async () => {
     const count = parseInt(selectedCount);
-    const qs = getQuestionsForCourse(courseTitle, courseCode, count);
-    if (qs.length === 0) {
-      toast.error("No theory questions available for this course");
-      return;
+    setGenerating(true);
+
+    try {
+      // Fetch materials/textbooks for additional context
+      const [materialsRes, textbooksRes] = await Promise.all([
+        supabase.from('materials').select('title, type').eq('course_id', courseId),
+        supabase.from('textbooks').select('title, author').eq('course_id', courseId),
+      ]);
+
+      const materialsContext = (materialsRes.data || []).map(m => `${m.title} (${m.type})`).join(', ');
+      const textbooksContext = (textbooksRes.data || []).map(t => `${t.title} by ${t.author}`).join(', ');
+
+      // Use AI to generate questions from course overview
+      const { data, error } = await supabase.functions.invoke('grade-theory-quiz', {
+        body: {
+          action: 'generate',
+          courseTitle,
+          courseCode,
+          courseId,
+          courseOverview: courseOverview || '',
+          materialsContext,
+          textbooksContext,
+          questionCount: count,
+        }
+      });
+
+      if (error) throw error;
+
+      const generatedQuestions = data.questions as string[];
+      if (!generatedQuestions || generatedQuestions.length === 0) {
+        toast.error("Failed to generate questions. Please try again.");
+        return;
+      }
+
+      setQuestions(generatedQuestions);
+      setAnswers(new Array(generatedQuestions.length).fill(""));
+      setCurrentQuestion(0);
+      setQuizStarted(true);
+      setQuizCompleted(false);
+      setGrades([]);
+      setTimeRemaining(parseInt(selectedTime) * 60);
+      setTimerActive(true);
+    } catch (err) {
+      console.error('Question generation error:', err);
+      toast.error('Failed to generate quiz questions. Please try again.');
+    } finally {
+      setGenerating(false);
     }
-    setQuestions(qs);
-    setAnswers(new Array(qs.length).fill(""));
-    setCurrentQuestion(0);
-    setQuizStarted(true);
-    setQuizCompleted(false);
-    setGrades([]);
-    setTimeRemaining(parseInt(selectedTime) * 60);
-    setTimerActive(true);
   };
 
   const handleAnswerChange = (value: string) => {
@@ -189,11 +124,13 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
     try {
       const { data, error } = await supabase.functions.invoke('grade-theory-quiz', {
         body: {
+          action: 'grade',
           questions,
           answers,
           courseTitle,
           courseCode,
           courseId,
+          courseOverview: courseOverview || '',
         }
       });
 
@@ -229,6 +166,18 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
     if (score >= 5) return "text-yellow-400";
     return "text-red-400";
   };
+
+  if (generating) {
+    return (
+      <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
+        <CardContent className="p-12 text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <h3 className="text-xl font-bold mb-2">AI is generating questions from course content...</h3>
+          <p className="text-muted-foreground">Creating questions based on {courseTitle} course outline and materials.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (grading) {
     return (
@@ -278,7 +227,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
                   </div>
                   <h3 className="text-xl font-semibold">Theory Quiz Settings</h3>
                   <p className="text-muted-foreground max-w-lg mx-auto">
-                    Answer open-ended questions. Your responses will be graded by AI based on accuracy, completeness, and clarity.
+                    AI generates questions strictly from your course outline, topics, and available materials. Your responses will be graded by AI based on accuracy, completeness, and clarity.
                   </p>
                 </div>
 
@@ -317,9 +266,10 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-400 mb-2">How it works:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• AI generates questions from the course outline and available materials</li>
+                    <li>• Questions are strictly based on course content — no out-of-context topics</li>
                     <li>• Write detailed answers to each theory question</li>
-                    <li>• AI grades each answer out of 10 marks</li>
-                    <li>• Get instant feedback on each response</li>
+                    <li>• AI grades each answer out of 10 marks with feedback</li>
                     <li>• Your score is recorded on the leaderboard</li>
                   </ul>
                 </div>
@@ -374,19 +324,21 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <div>
-                              <p className="font-medium text-sm text-muted-foreground mb-1">Question:</p>
-                              <p>{q}</p>
+                              <p className="font-medium text-sm mb-1">Question:</p>
+                              <p className="text-sm text-muted-foreground">{q}</p>
                             </div>
                             <div>
-                              <p className="font-medium text-sm text-muted-foreground mb-1">Your Answer:</p>
-                              <p className="text-sm bg-bg-secondary/50 p-3 rounded-lg whitespace-pre-wrap">
+                              <p className="font-medium text-sm mb-1">Your Answer:</p>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                                 {answers[i] || "(No answer provided)"}
                               </p>
                             </div>
-                            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                              <p className="font-semibold text-blue-400 text-sm mb-1">AI Feedback:</p>
-                              <p className="text-sm text-muted-foreground">{grade?.feedback || "No feedback available"}</p>
-                            </div>
+                            {grade?.feedback && (
+                              <div className="bg-primary/5 rounded-lg p-3">
+                                <p className="font-medium text-sm mb-1">AI Feedback:</p>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{grade.feedback}</p>
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
                       );
@@ -396,51 +348,57 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm text-muted-foreground">
                     Question {currentQuestion + 1} of {questions.length}
-                  </Badge>
-                  <div className="text-sm text-muted-foreground">
-                    {answers.filter(a => a.trim().length > 0).length} answered
-                  </div>
+                  </span>
+                  <Progress value={((currentQuestion + 1) / questions.length) * 100} className="w-1/3" />
                 </div>
 
-                <Progress value={((currentQuestion + 1) / questions.length) * 100} />
-
-                <div className="space-y-4">
-                  <div className="p-4 bg-bg-primary/50 rounded-lg border border-white/10">
-                    <p className="font-medium">{questions[currentQuestion]}</p>
-                  </div>
-
-                  <Textarea
-                    value={answers[currentQuestion]}
-                    onChange={(e) => handleAnswerChange(e.target.value)}
-                    placeholder="Write your detailed answer here... Be thorough and use technical terms where appropriate."
-                    className="min-h-[200px] bg-bg-primary/60 border-white/20"
-                  />
-                  
-                  <p className="text-xs text-muted-foreground">
-                    {answers[currentQuestion].length} characters written
-                  </p>
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                  <p className="font-medium">{questions[currentQuestion]}</p>
                 </div>
+
+                <Textarea
+                  value={answers[currentQuestion]}
+                  onChange={(e) => handleAnswerChange(e.target.value)}
+                  placeholder="Write your detailed answer here..."
+                  rows={8}
+                  className="resize-none"
+                />
 
                 <div className="flex justify-between">
                   <Button
-                    onClick={() => setCurrentQuestion(prev => prev - 1)}
-                    disabled={currentQuestion === 0}
                     variant="outline"
+                    onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
+                    disabled={currentQuestion === 0}
                   >
                     Previous
                   </Button>
-                  {currentQuestion === questions.length - 1 ? (
-                    <Button onClick={handleSubmit} variant="destructive">
-                      Submit for AI Grading
-                    </Button>
-                  ) : (
+                  {currentQuestion < questions.length - 1 ? (
                     <Button onClick={() => setCurrentQuestion(prev => prev + 1)}>
                       Next
                     </Button>
+                  ) : (
+                    <Button onClick={handleSubmit} variant="default">
+                      Submit Quiz
+                    </Button>
                   )}
+                </div>
+
+                {/* Question navigator */}
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+                  {questions.map((_, i) => (
+                    <Button
+                      key={i}
+                      variant={i === currentQuestion ? "default" : answers[i] ? "secondary" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentQuestion(i)}
+                      className="w-10 h-10"
+                    >
+                      {i + 1}
+                    </Button>
+                  ))}
                 </div>
               </div>
             )}
