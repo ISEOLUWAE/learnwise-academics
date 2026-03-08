@@ -21,6 +21,7 @@ import {
   Bot
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
+import TheoryQuizComponent from "@/components/quiz/TheoryQuizComponent";
 import QuizHistory from "@/components/quiz/QuizHistory";
 import Leaderboard from "@/components/course/Leaderboard";
 import Community from "@/components/course/Community";
