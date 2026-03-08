@@ -178,6 +178,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
     setQuizCompleted(false);
     setQuestions([]);
     setAnswers([]);
+    setReferenceAnswers([]);
     setGrades([]);
     setCurrentQuestion(0);
     setTimerActive(false);
