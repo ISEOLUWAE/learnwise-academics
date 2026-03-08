@@ -67,11 +67,24 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining]);
 
+  // Use refs to track current state for event handlers (avoid stale closures)
+  const answersRef = useRef(answers);
+  const selectedAnswerRef = useRef(selectedAnswer);
+  const currentQuestionRef = useRef(currentQuestion);
+  const quizStartedRef = useRef(quizStarted);
+  const quizCompletedRef = useRef(quizCompleted);
+  
+  useEffect(() => { answersRef.current = answers; }, [answers]);
+  useEffect(() => { selectedAnswerRef.current = selectedAnswer; }, [selectedAnswer]);
+  useEffect(() => { currentQuestionRef.current = currentQuestion; }, [currentQuestion]);
+  useEffect(() => { quizStartedRef.current = quizStarted; }, [quizStarted]);
+  useEffect(() => { quizCompletedRef.current = quizCompleted; }, [quizCompleted]);
+
   // Enhanced tab switching detection
   useEffect(() => {
     if (quizStarted && !quizCompleted) {
       const handleVisibilityChange = () => {
-        if (document.hidden) {
+        if (document.hidden && quizStartedRef.current && !quizCompletedRef.current) {
           console.log("Tab switch detected - auto submitting quiz");
           handleSubmit();
         }
@@ -84,7 +97,7 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
       };
 
       const handleBlur = () => {
-        if (quizStarted && !quizCompleted) {
+        if (quizStartedRef.current && !quizCompletedRef.current) {
           console.log("Window focus lost - auto submitting quiz");
           handleSubmit();
         }
