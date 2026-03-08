@@ -145,7 +145,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode }: TheoryQuizPr
   const [showResults, setShowResults] = useState(false);
 
   // Timer
-  useState(() => {
+  useEffect(() => {
     if (!timerActive || timeRemaining <= 0) return;
     const interval = setInterval(() => {
       setTimeRemaining(prev => {
