@@ -451,11 +451,17 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
                   className="text-center"
                 >
                   <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">Quiz Completed!</h3>
-                  <div className="text-4xl font-bold text-brand-blue mb-2">{score}%</div>
-                  <p className="text-muted-foreground">
-                    You scored {score}% ({Math.round((score / 100) * questions.length)} out of {questions.length} questions correct)
-                  </p>
+                   <h3 className="text-2xl font-bold mb-2">Quiz Completed!</h3>
+                   <div className="text-4xl font-bold text-brand-blue mb-2">{score}%</div>
+                   <p className="text-muted-foreground">
+                     You got {Math.round((score / 100) * questions.length)} correct out of {questions.length} questions
+                     {(() => {
+                       const attempted = answers.filter(a => a !== -1).length;
+                       return attempted < questions.length 
+                         ? ` (${attempted} attempted, ${questions.length - attempted} unanswered)`
+                         : '';
+                     })()}
+                   </p>
                 </motion.div>
 
                 <div className="flex gap-4 justify-center">
