@@ -57,6 +57,18 @@ serve(async (req) => {
       );
     }
 
+    // Sanitize and limit message length
+    const message = String(rawMessage).slice(0, 500);
+
+    function escapeTwiml(str: string): string {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
     // Verify user is class_rep or dept_admin
     const { data: memberData, error: memberError } = await supabaseClient
       .from('department_members')
