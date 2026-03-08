@@ -222,7 +222,7 @@ const DepartmentalCourseListing = () => {
                 <SelectTrigger className="bg-bg-primary/60 border-white/30 focus:border-primary h-12">
                   <SelectValue placeholder="Select Department" />
                 </SelectTrigger>
-                <SelectContent className="bg-background border-white/20 z-50">
+                <SelectContent className="bg-background border-white/20 z-50 max-h-60 overflow-y-auto">
                   {departments.map((dept) => (
                     <SelectItem key={dept} value={dept}>
                       {dept}
