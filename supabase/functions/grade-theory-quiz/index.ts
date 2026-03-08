@@ -163,12 +163,14 @@ CRITICAL RULES:
 ${contextInfo}
 
 Grade each answer on a scale of 0-10. Be thorough and fair. Consider:
-- Accuracy and correctness based on the course content provided above
+- Accuracy and correctness based on the course content and reference answers provided
 - Completeness and depth of explanation
 - Use of appropriate technical terminology from the course
 - Clarity and organization of the response
 - If the answer is empty or says "No answer", give 0 marks
-- Grade ONLY based on what the course content covers — do not penalize for missing information that is outside the course scope
+- The student's answer does NOT need to be word-for-word identical to the reference answer — as long as it is correct and demonstrates understanding, give appropriate marks
+- Grade based on what the course content covers — do not penalize for missing information outside the course scope
+- When a reference answer is provided, use it as the gold standard for what constitutes a complete and correct answer
 
 For each question, provide brief but helpful feedback explaining the grade and what could be improved.`
           },
