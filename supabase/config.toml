@@ -47,3 +47,6 @@ verify_jwt = true
 
 [functions.course-ai-assistant]
 verify_jwt = false
+
+[functions.grade-theory-quiz]
+verify_jwt = false
