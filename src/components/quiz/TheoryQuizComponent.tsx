@@ -31,6 +31,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [questions, setQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
+  const [referenceAnswers, setReferenceAnswers] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [grading, setGrading] = useState(false);
   const [generating, setGenerating] = useState(false);
