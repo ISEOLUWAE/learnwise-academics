@@ -48,13 +48,25 @@ serve(async (req) => {
       );
     }
 
-    const { departmentSpaceId, message } = await req.json();
+    const { departmentSpaceId, message: rawMessage } = await req.json();
 
-    if (!departmentSpaceId || !message) {
+    if (!departmentSpaceId || !rawMessage) {
       return new Response(
         JSON.stringify({ error: 'Department space ID and message are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Sanitize and limit message length
+    const message = String(rawMessage).slice(0, 500);
+
+    function escapeTwiml(str: string): string {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
     }
 
     // Verify user is class_rep or dept_admin
@@ -157,7 +169,8 @@ serve(async (req) => {
 
         console.log(`Calling ${member.full_name || member.username} at ${phoneNumber}`);
 
-        const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${message}. I repeat: ${message}</Say></Response>`;
+        const safeMessage = escapeTwiml(message);
+        const twimlMessage = `<Response><Say voice="alice">Urgent notification from your class representative: ${safeMessage}. I repeat: ${safeMessage}</Say></Response>`;
         
         const formData = new URLSearchParams();
         formData.append('To', phoneNumber);

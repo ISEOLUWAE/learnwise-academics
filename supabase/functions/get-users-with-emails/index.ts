@@ -76,10 +76,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-users-with-emails:', error)
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'An unknown error occurred' }),
+      JSON.stringify({ error: 'Unable to process request' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
+        status: 500
       }
     )
   }
