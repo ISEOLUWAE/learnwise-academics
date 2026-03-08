@@ -183,13 +183,14 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
   const handleSubmit = async () => {
     setTimerActive(false);
     
-    // Save current answer
+    // Save current answer before submitting
     const finalAnswers = [...answers];
     if (selectedAnswer !== "") {
       finalAnswers[currentQuestion] = parseInt(selectedAnswer);
     }
     
-    // Calculate score
+    // Calculate score - count correct answers out of TOTAL questions
+    // Unanswered questions (-1) are counted as incorrect
     let correctCount = 0;
     questions.forEach((question, index) => {
       if (finalAnswers[index] === question.correct_answer) {
@@ -197,7 +198,8 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
       }
     });
     
-    const finalScore = Math.round((correctCount / questions.length) * 100);
+    // Grade over total questions (not just attempted)
+    const finalScore = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
     const timeTaken = (parseInt(selectedTimeLimit) * 60) - timeRemaining;
     setScore(finalScore);
     setAnswers(finalAnswers);
