@@ -49,7 +49,11 @@ const CodeRenderer = ({ children, language = "javascript" }: CodeRendererProps) 
       '<span class="text-yellow-400">$1</span>('
     );
 
-    setHighlightedCode(highlighted);
+    const sanitized = DOMPurify.sanitize(highlighted, {
+      ALLOWED_TAGS: ['span', 'pre', 'code'],
+      ALLOWED_ATTR: ['class']
+    });
+    setHighlightedCode(sanitized);
   }, [children]);
 
   // Check if content looks like code
