@@ -61,7 +61,7 @@ const CodeRenderer = ({ children, language }: CodeRendererProps) => {
 function detectLanguage(code: string): string {
   if (/def |print\(|elif |import |from /.test(code)) return 'python';
   if (/function |const |let |var |=>/.test(code)) return 'javascript';
-  if /#include|int main|printf|iostream/.test(code)) return 'c';
+  if (/#include|int main|printf|iostream/.test(code)) return 'c';
   if (/public class|System\.out/.test(code)) return 'java';
   return 'python';
 }
