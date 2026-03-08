@@ -42,14 +42,32 @@ serve(async (req) => {
 
     // === GENERATE QUESTIONS ===
     if (action === 'generate') {
-      const { courseTitle, courseCode, courseOverview, materialsContext, textbooksContext, questionCount } = body;
+      const { courseTitle, courseCode, courseOverview, courseId, questionCount } = body;
+
+      // Fetch materials content and textbooks from DB
+      const { data: materialsData } = await supabaseClient
+        .from('materials')
+        .select('title, type, content_text')
+        .eq('course_id', courseId);
+
+      const { data: textbooksData } = await supabaseClient
+        .from('textbooks')
+        .select('title, author')
+        .eq('course_id', courseId);
+
+      const materialsContent = (materialsData || [])
+        .filter(m => m.content_text)
+        .map(m => `--- ${m.title} (${m.type}) ---\n${m.content_text}`)
+        .join('\n\n');
+
+      const textbooksContext = (textbooksData || []).map(t => `${t.title} by ${t.author}`).join(', ');
 
       let contextBlock = `Course: ${courseTitle} (${courseCode})\n\n`;
       if (courseOverview) {
         contextBlock += `COURSE OVERVIEW AND CONTENT:\n${courseOverview}\n\n`;
       }
-      if (materialsContext) {
-        contextBlock += `AVAILABLE COURSE MATERIALS: ${materialsContext}\n\n`;
+      if (materialsContent) {
+        contextBlock += `LECTURE MATERIALS CONTENT:\n${materialsContent}\n\n`;
       }
       if (textbooksContext) {
         contextBlock += `RECOMMENDED TEXTBOOKS: ${textbooksContext}\n\n`;
@@ -135,6 +153,22 @@ CRITICAL RULES:
     // === GRADE ANSWERS ===
     const { questions, answers, referenceAnswers, courseTitle, courseCode, courseId, courseOverview } = body;
 
+    // Fetch materials content for grading context
+    const { data: gradeMaterials } = await supabaseClient
+      .from('materials')
+      .select('title, content_text')
+      .eq('course_id', courseId);
+
+    const { data: gradeTextbooks } = await supabaseClient
+      .from('textbooks')
+      .select('title, author')
+      .eq('course_id', courseId);
+
+    const materialsGradeContent = (gradeMaterials || [])
+      .filter(m => m.content_text)
+      .map(m => `--- ${m.title} ---\n${m.content_text}`)
+      .join('\n\n');
+
     const gradingPrompt = questions.map((q: string, i: number) => {
       let block = `Question ${i + 1}: ${q}\nStudent's Answer: ${answers[i] || "(No answer provided)"}`;
       if (referenceAnswers && referenceAnswers[i]) {
@@ -146,6 +180,9 @@ CRITICAL RULES:
     let contextInfo = `Course: ${courseTitle} (${courseCode})`;
     if (courseOverview) {
       contextInfo += `\n\nCOURSE CONTENT FOR REFERENCE:\n${courseOverview}`;
+    }
+    if (materialsGradeContent) {
+      contextInfo += `\n\nLECTURE MATERIALS FOR REFERENCE:\n${materialsGradeContent}`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
