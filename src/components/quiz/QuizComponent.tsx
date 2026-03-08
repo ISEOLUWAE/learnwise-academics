@@ -226,22 +226,32 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
     // Save to both leaderboard and quiz history if user is authenticated
     if (user) {
       try {
-        // Save to leaderboard
+        // Save to leaderboard (only if better than existing score)
         if (finalScore > 0) {
-          const { error: leaderboardError } = await supabase
+          // Check existing score first
+          const { data: existingScore } = await supabase
             .from('leaderboard')
-            .upsert({
-              course_id: courseId,
-              user_id: user.id,
-              name: user.email?.split('@')[0] || 'Anonymous',
-              score: finalScore,
-              avatar: user.email?.charAt(0).toUpperCase() || 'A'
-            }, {
-              onConflict: 'course_id,user_id'
-            });
+            .select('score')
+            .eq('course_id', courseId)
+            .eq('user_id', user.id)
+            .single();
 
-          if (leaderboardError) {
-            console.error('Error saving score:', leaderboardError);
+          if (!existingScore || finalScore > existingScore.score) {
+            const { error: leaderboardError } = await supabase
+              .from('leaderboard')
+              .upsert({
+                course_id: courseId,
+                user_id: user.id,
+                name: user.email?.split('@')[0] || 'Anonymous',
+                score: finalScore,
+                avatar: user.email?.charAt(0).toUpperCase() || 'A'
+              }, {
+                onConflict: 'course_id,user_id'
+              });
+
+            if (leaderboardError) {
+              console.error('Error saving score:', leaderboardError);
+            }
           }
         }
 
