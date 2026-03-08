@@ -204,7 +204,8 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
     if (currentSelectedAnswer !== "") {
       currentAnswers[currentQuestionIdx] = parseInt(currentSelectedAnswer);
     }
-    }
+    
+    const finalAnswers = currentAnswers;
     
     // Calculate score - count correct answers out of TOTAL questions
     // Unanswered questions (-1) are counted as incorrect
