@@ -21,6 +21,7 @@ import {
   Bot
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
+import TheoryQuizComponent from "@/components/quiz/TheoryQuizComponent";
 import QuizHistory from "@/components/quiz/QuizHistory";
 import Leaderboard from "@/components/course/Leaderboard";
 import Community from "@/components/course/Community";
@@ -317,8 +318,16 @@ const CourseDetail = () => {
                     value="quiz" 
                     className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
                   >
-                    Quiz
+                    MCQ Quiz
                   </TabsTrigger>
+                  {parseInt(course.level) >= 200 && (
+                    <TabsTrigger 
+                      value="theory-quiz" 
+                      className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
+                    >
+                      Theory Quiz
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger 
                     value="history" 
                     className="flex-1 min-w-[80px] text-xs sm:text-sm px-3 py-2 rounded-md font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/20"
@@ -468,6 +477,16 @@ const CourseDetail = () => {
                     courseTitle={course.title}
                   />
                 </TabsContent>
+
+                {parseInt(course.level) >= 200 && (
+                  <TabsContent value="theory-quiz" className="space-y-6">
+                    <TheoryQuizComponent 
+                      courseId={course.id} 
+                      courseTitle={course.title}
+                      courseCode={course.code}
+                    />
+                  </TabsContent>
+                )}
 
                 <TabsContent value="history" className="space-y-6">
                   <QuizHistory courseId={course.id} courseTitle={course.title} />

@@ -1084,6 +1084,56 @@ export type Database = {
           },
         ]
       }
+      theory_quiz_submissions: {
+        Row: {
+          ai_feedback: string | null
+          ai_score: number | null
+          answer: string
+          course_id: string
+          created_at: string
+          graded: boolean | null
+          id: string
+          max_score: number | null
+          question: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          ai_score?: number | null
+          answer: string
+          course_id: string
+          created_at?: string
+          graded?: boolean | null
+          id?: string
+          max_score?: number | null
+          question: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          ai_score?: number | null
+          answer?: string
+          course_id?: string
+          created_at?: string
+          graded?: boolean | null
+          id?: string
+          max_score?: number | null
+          question?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theory_quiz_submissions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
