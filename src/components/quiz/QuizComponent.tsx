@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,11 +67,24 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining]);
 
+  // Use refs to track current state for event handlers (avoid stale closures)
+  const answersRef = useRef(answers);
+  const selectedAnswerRef = useRef(selectedAnswer);
+  const currentQuestionRef = useRef(currentQuestion);
+  const quizStartedRef = useRef(quizStarted);
+  const quizCompletedRef = useRef(quizCompleted);
+  
+  useEffect(() => { answersRef.current = answers; }, [answers]);
+  useEffect(() => { selectedAnswerRef.current = selectedAnswer; }, [selectedAnswer]);
+  useEffect(() => { currentQuestionRef.current = currentQuestion; }, [currentQuestion]);
+  useEffect(() => { quizStartedRef.current = quizStarted; }, [quizStarted]);
+  useEffect(() => { quizCompletedRef.current = quizCompleted; }, [quizCompleted]);
+
   // Enhanced tab switching detection
   useEffect(() => {
     if (quizStarted && !quizCompleted) {
       const handleVisibilityChange = () => {
-        if (document.hidden) {
+        if (document.hidden && quizStartedRef.current && !quizCompletedRef.current) {
           console.log("Tab switch detected - auto submitting quiz");
           handleSubmit();
         }
@@ -84,7 +97,7 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
       };
 
       const handleBlur = () => {
-        if (quizStarted && !quizCompleted) {
+        if (quizStartedRef.current && !quizCompletedRef.current) {
           console.log("Window focus lost - auto submitting quiz");
           handleSubmit();
         }
@@ -183,13 +196,19 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
   const handleSubmit = async () => {
     setTimerActive(false);
     
-    // Save current answer
-    const finalAnswers = [...answers];
-    if (selectedAnswer !== "") {
-      finalAnswers[currentQuestion] = parseInt(selectedAnswer);
+    // Use refs for the most current state (important for auto-submit from event listeners)
+    const currentAnswers = [...answersRef.current];
+    const currentSelectedAnswer = selectedAnswerRef.current;
+    const currentQuestionIdx = currentQuestionRef.current;
+    
+    if (currentSelectedAnswer !== "") {
+      currentAnswers[currentQuestionIdx] = parseInt(currentSelectedAnswer);
     }
     
-    // Calculate score
+    const finalAnswers = currentAnswers;
+    
+    // Calculate score - count correct answers out of TOTAL questions
+    // Unanswered questions (-1) are counted as incorrect
     let correctCount = 0;
     questions.forEach((question, index) => {
       if (finalAnswers[index] === question.correct_answer) {
@@ -197,7 +216,8 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
       }
     });
     
-    const finalScore = Math.round((correctCount / questions.length) * 100);
+    // Grade over total questions (not just attempted)
+    const finalScore = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
     const timeTaken = (parseInt(selectedTimeLimit) * 60) - timeRemaining;
     setScore(finalScore);
     setAnswers(finalAnswers);
@@ -449,11 +469,17 @@ const QuizComponent = ({ courseId, courseTitle, hasWatchedAds = true, onQuizAcce
                   className="text-center"
                 >
                   <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">Quiz Completed!</h3>
-                  <div className="text-4xl font-bold text-brand-blue mb-2">{score}%</div>
-                  <p className="text-muted-foreground">
-                    You scored {score}% ({Math.round((score / 100) * questions.length)} out of {questions.length} questions correct)
-                  </p>
+                   <h3 className="text-2xl font-bold mb-2">Quiz Completed!</h3>
+                   <div className="text-4xl font-bold text-brand-blue mb-2">{score}%</div>
+                   <p className="text-muted-foreground">
+                     You got {Math.round((score / 100) * questions.length)} correct out of {questions.length} questions
+                     {(() => {
+                       const attempted = answers.filter(a => a !== -1).length;
+                       return attempted < questions.length 
+                         ? ` (${attempted} attempted, ${questions.length - attempted} unanswered)`
+                         : '';
+                     })()}
+                   </p>
                 </motion.div>
 
                 <div className="flex gap-4 justify-center">
