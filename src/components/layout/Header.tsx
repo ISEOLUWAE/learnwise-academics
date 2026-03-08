@@ -33,7 +33,7 @@ const Header = () => {
       .single();
     
     if (data) {
-      setUsername(data.username || data.full_name || null);
+      setUsername(data.full_name || data.username || null);
     }
   };
 
@@ -110,7 +110,7 @@ const Header = () => {
                 <Link to="/profile">
                   <Button variant="ghost" size="sm" className="flex items-center gap-1 xl:gap-2 text-xs xl:text-sm max-w-[120px] xl:max-w-[180px]">
                     <User className="h-3 w-3 xl:h-4 xl:w-4 flex-shrink-0" />
-                    <span className="truncate">@{displayName}</span>
+                    <span className="truncate">{displayName}</span>
                   </Button>
                 </Link>
                 <Button 
@@ -199,7 +199,7 @@ const Header = () => {
                     </Link>
                     <div className="text-center text-sm text-muted-foreground py-2 flex items-center justify-center gap-2">
                       <User className="h-4 w-4" />
-                      @{displayName}
+                      {displayName}
                     </div>
                     <Button 
                       variant="outline" 

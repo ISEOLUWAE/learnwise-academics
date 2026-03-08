@@ -27,21 +27,78 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+  const syncProfileFromUser = async (authUser: User) => {
+    const googleFullName =
+      authUser.user_metadata?.full_name ||
+      authUser.user_metadata?.name ||
+      '';
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const googleAvatar =
+      authUser.user_metadata?.avatar_url ||
+      authUser.user_metadata?.picture ||
+      '';
+
+    const emailPrefix = authUser.email?.split('@')[0] || 'User';
+
+    const { data: existingProfile, error: profileFetchError } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url')
+      .eq('id', authUser.id)
+      .maybeSingle();
+
+    if (profileFetchError) {
+      console.error('Error fetching profile:', profileFetchError);
+      return;
+    }
+
+    const fullNameToSave =
+      existingProfile?.full_name?.trim() ||
+      googleFullName ||
+      emailPrefix;
+
+    const usernameToSave =
+      existingProfile?.username?.trim() ||
+      googleFullName ||
+      emailPrefix;
+
+    const avatarToSave =
+      existingProfile?.avatar_url ||
+      googleAvatar ||
+      null;
+
+    const { error: upsertError } = await supabase.from('profiles').upsert({
+      id: authUser.id,
+      full_name: fullNameToSave,
+      username: usernameToSave,
+      avatar_url: avatarToSave,
+    });
+
+    if (upsertError) {
+      console.error('Error syncing profile:', upsertError);
+    }
+  };
+
+  useEffect(() => {
+    const handleSession = async (currentSession: Session | null) => {
+      const currentUser = currentSession?.user ?? null;
+      setSession(currentSession);
+      setUser(currentUser);
+
+      if (currentUser) {
+        await syncProfileFromUser(currentUser);
+      }
+
       setLoading(false);
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      void handleSession(currentSession);
+    });
+
+    void supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      void handleSession(currentSession);
     });
 
     return () => subscription.unsubscribe();
@@ -49,35 +106,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
+    const cleanFullName = fullName.trim();
+    const cleanUsername = username.trim();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          full_name: fullName,
-          username: username,
-        }
-      }
+          full_name: cleanFullName,
+          username: cleanUsername,
+        },
+      },
     });
-    
-    // Handle duplicate email error
-    if (error?.message?.includes('already registered') || 
-        error?.message?.includes('already exists') ||
-        error?.message?.includes('User already registered')) {
+
+    if (
+      error?.message?.includes('already registered') ||
+      error?.message?.includes('already exists') ||
+      error?.message?.includes('User already registered')
+    ) {
       return { error: { message: 'This email is already registered. Please login instead.' } };
     }
 
-    // Create profile with username if signup succeeded
     if (data?.user && !error) {
-      await supabase.from('profiles').upsert({
+      const { error: profileError } = await supabase.from('profiles').upsert({
         id: data.user.id,
-        full_name: fullName,
-        username: username,
+        full_name: cleanFullName,
+        username: cleanUsername || cleanFullName || email.split('@')[0],
       });
+
+      if (profileError) {
+        console.error('Error creating profile during signup:', profileError);
+      }
     }
-    
+
     return { error };
   };
 
@@ -86,6 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
     });
+
     return { error };
   };
 
@@ -94,8 +159,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/`,
-      }
+      },
     });
+
     return { error };
   };
 
