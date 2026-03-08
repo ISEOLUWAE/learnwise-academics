@@ -64,7 +64,29 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
     setGenerating(true);
 
     try {
-      // Fetch materials/textbooks for additional context
+      // Check for pre-made questions in the quiz bank first
+      const { data: bankQuestions } = await supabase
+        .from('theory_quiz_bank')
+        .select('question, reference_answer')
+        .eq('course_id', courseId);
+
+      if (bankQuestions && bankQuestions.length >= count) {
+        // Randomly select from bank
+        const shuffled = [...bankQuestions].sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, count);
+        setQuestions(selected.map(q => q.question));
+        setReferenceAnswers(selected.map(q => q.reference_answer));
+        setAnswers(new Array(count).fill(""));
+        setCurrentQuestion(0);
+        setQuizStarted(true);
+        setQuizCompleted(false);
+        setGrades([]);
+        setTimeRemaining(parseInt(selectedTime) * 60);
+        setTimerActive(true);
+        return;
+      }
+
+      // Fallback: AI generates questions from course overview
       const [materialsRes, textbooksRes] = await Promise.all([
         supabase.from('materials').select('title, type').eq('course_id', courseId),
         supabase.from('textbooks').select('title, author').eq('course_id', courseId),
@@ -73,7 +95,6 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
       const materialsContext = (materialsRes.data || []).map(m => `${m.title} (${m.type})`).join(', ');
       const textbooksContext = (textbooksRes.data || []).map(t => `${t.title} by ${t.author}`).join(', ');
 
-      // Use AI to generate questions from course overview
       const { data, error } = await supabase.functions.invoke('grade-theory-quiz', {
         body: {
           action: 'generate',
@@ -96,6 +117,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
       }
 
       setQuestions(generatedQuestions);
+      setReferenceAnswers([]);
       setAnswers(new Array(generatedQuestions.length).fill(""));
       setCurrentQuestion(0);
       setQuizStarted(true);
