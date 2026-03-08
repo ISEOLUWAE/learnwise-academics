@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Medal, Award, Trash2 } from "lucide-react";
+import { Trophy, Medal, Award, Trash2, Crown, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -29,6 +29,19 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
 
   useEffect(() => {
     fetchLeaderboard();
+    
+    // Real-time subscription
+    const channel = supabase
+      .channel(`leaderboard-${courseId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'leaderboard',
+        filter: `course_id=eq.${courseId}`
+      }, () => fetchLeaderboard())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [courseId]);
 
   const fetchLeaderboard = async () => {
@@ -39,13 +52,12 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
         .select('*')
         .eq('course_id', courseId)
         .order('score', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) {
         console.error('Error fetching leaderboard:', error);
         return;
       }
-
       setLeaderboard(data || []);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
@@ -66,7 +78,6 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
 
       if (error) throw error;
 
-      // Log admin action
       if (user) {
         await supabase.from('admin_actions').insert({
           admin_id: user.id,
@@ -88,27 +99,36 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
 
   const getRankIcon = (index: number) => {
     switch (index) {
-      case 0: return <Trophy className="h-5 w-5 text-yellow-500" />;
-      case 1: return <Medal className="h-5 w-5 text-gray-400" />;
-      case 2: return <Award className="h-5 w-5 text-orange-500" />;
-      default: return <span className="text-sm font-bold">#{index + 1}</span>;
+      case 0: return <Crown className="h-6 w-6 text-yellow-400" />;
+      case 1: return <Medal className="h-5 w-5 text-gray-300" />;
+      case 2: return <Award className="h-5 w-5 text-amber-600" />;
+      default: return <span className="text-sm font-bold text-muted-foreground">#{index + 1}</span>;
     }
   };
 
   const getRankStyle = (index: number) => {
     switch (index) {
-      case 0: return "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30";
-      case 1: return "bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/30";
-      case 2: return "bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30";
-      default: return "bg-bg-primary/50 border-white/10";
+      case 0: return "bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-lg shadow-yellow-500/10";
+      case 1: return "bg-gradient-to-r from-gray-400/15 to-gray-500/15 border-gray-400/30";
+      case 2: return "bg-gradient-to-r from-amber-600/15 to-orange-500/15 border-amber-500/30";
+      default: return "bg-bg-primary/30 border-white/10";
     }
   };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-400";
+    if (score >= 60) return "text-yellow-400";
+    if (score >= 40) return "text-orange-400";
+    return "text-red-400";
+  };
+
+  const currentUserRank = user ? leaderboard.findIndex(e => e.user_id === user.id) : -1;
 
   if (loading) {
     return (
       <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
         <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading leaderboard...</p>
         </CardContent>
       </Card>
@@ -120,13 +140,33 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
+      className="space-y-4"
     >
+      {/* Current user rank card */}
+      {currentUserRank >= 0 && (
+        <Card className="bg-gradient-to-r from-primary/20 to-primary/10 border-primary/30">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm font-medium">Your Rank</p>
+                <p className="text-xs text-muted-foreground">Best score recorded</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-primary">#{currentUserRank + 1}</p>
+              <p className="text-sm text-muted-foreground">{leaderboard[currentUserRank]?.score}%</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="bg-bg-secondary/50 backdrop-blur border-white/10">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              Top 10 Leaderboard
+              Top 20 Leaderboard
             </span>
             {isAdmin && leaderboard.length > 0 && (
               <Button
@@ -142,7 +182,7 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {leaderboard.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 No quiz scores yet. Be the first to take the quiz!
@@ -153,23 +193,30 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
                   key={entry.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className={`flex items-center justify-between p-4 rounded-lg border ${getRankStyle(index)}`}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-all ${getRankStyle(index)} ${
+                    user && entry.user_id === user.id ? 'ring-2 ring-primary/50' : ''
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index)}
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-brand-blue/20 flex items-center justify-center text-sm font-semibold">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold">
                       {entry.avatar}
                     </div>
                     <div>
-                      <h4 className="font-semibold">{entry.name}</h4>
-                      <p className="text-sm text-muted-foreground">Rank #{index + 1}</p>
+                      <h4 className="font-semibold text-sm">
+                        {entry.name}
+                        {user && entry.user_id === user.id && (
+                          <span className="text-xs text-primary ml-2">(You)</span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">Rank #{index + 1}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-brand-blue text-lg">{entry.score}%</p>
+                    <p className={`font-bold text-lg ${getScoreColor(entry.score)}`}>{entry.score}%</p>
                   </div>
                 </motion.div>
               ))
