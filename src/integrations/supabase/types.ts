@@ -1084,6 +1084,38 @@ export type Database = {
           },
         ]
       }
+      theory_quiz_bank: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          question: string
+          reference_answer: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          question: string
+          reference_answer: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          question?: string
+          reference_answer?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theory_quiz_bank_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       theory_quiz_submissions: {
         Row: {
           ai_feedback: string | null
