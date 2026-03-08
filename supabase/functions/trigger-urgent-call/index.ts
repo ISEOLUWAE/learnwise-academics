@@ -48,9 +48,9 @@ serve(async (req) => {
       );
     }
 
-    const { departmentSpaceId, message } = await req.json();
+    const { departmentSpaceId, message: rawMessage } = await req.json();
 
-    if (!departmentSpaceId || !message) {
+    if (!departmentSpaceId || !rawMessage) {
       return new Response(
         JSON.stringify({ error: 'Department space ID and message are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
