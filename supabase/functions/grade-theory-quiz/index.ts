@@ -133,11 +133,15 @@ CRITICAL RULES:
     }
 
     // === GRADE ANSWERS ===
-    const { questions, answers, courseTitle, courseCode, courseId, courseOverview } = body;
+    const { questions, answers, referenceAnswers, courseTitle, courseCode, courseId, courseOverview } = body;
 
-    const gradingPrompt = questions.map((q: string, i: number) =>
-      `Question ${i + 1}: ${q}\nStudent's Answer: ${answers[i] || "(No answer provided)"}`
-    ).join('\n\n');
+    const gradingPrompt = questions.map((q: string, i: number) => {
+      let block = `Question ${i + 1}: ${q}\nStudent's Answer: ${answers[i] || "(No answer provided)"}`;
+      if (referenceAnswers && referenceAnswers[i]) {
+        block += `\nReference Answer: ${referenceAnswers[i]}`;
+      }
+      return block;
+    }).join('\n\n');
 
     let contextInfo = `Course: ${courseTitle} (${courseCode})`;
     if (courseOverview) {
