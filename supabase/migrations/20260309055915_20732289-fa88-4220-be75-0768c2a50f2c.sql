@@ -1,0 +1,11 @@
+INSERT INTO materials (course_id, title, type, link) VALUES
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 1: ICT Principles, Practices and Opportunities', 'slides', '/materials/ict201/ICT_201_Week_1_Information_Communication_Technology_Principles_Practices_and_Opportunities.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 2: Essentials of Computing', 'slides', '/materials/ict201/ICT_201_Week_2_Essentials_of_Computing.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 3: The System Unit and the Central Processing Unit', 'slides', '/materials/ict201/ICT_201_Week_3_The_System_Unit_and_the_Central_Processing_Unit.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 4: Input Devices, Output Devices, Storage Devices and Memory', 'slides', '/materials/ict201/ICT_201_Week_4_Input_Devices_Output_Devices_and_Storage_Devices_and_Memory.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 5: Computer Networks, Networking Technologies and Communications Networks', 'slides', '/materials/ict201/ICT_201_Week_5_Computer_Networks_Networking_Technologies_and_Communications_Networks.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 6: Enterprise and Wireless Communications Networks', 'slides', '/materials/ict201/ICT_201_Week_6_Enterprise_and_Wireless_Communications_Networks.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 7: Essentials of the Internet', 'slides', '/materials/ict201/ICT_201_Week_7_Essentials_of_the_Internet.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 8: Electronic Commerce and Electronic Business', 'slides', '/materials/ict201/ICT_201_Week_8_Electronic_Commerce_and_Electronic_Business.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 9: Launching Information Technology Applications Projects', 'slides', '/materials/ict201/ICT_201_Week_9_Launching_Information_Technology_Applications_Projects.pptx'),
+('ca315991-ea5c-40bc-b725-78114f252c36', 'Week 10: Creating Enterprise Applications and Project Management', 'slides', '/materials/ict201/ICT_201_Week_10_Creating_Enterprise_Applications_and_Project_Management.pptx');
