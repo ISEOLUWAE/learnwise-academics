@@ -23,6 +23,7 @@ interface GradeResult {
   question_number: number;
   score: number;
   feedback: string;
+  explanation: string;
 }
 
 const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview }: TheoryQuizProps) => {
