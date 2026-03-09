@@ -23,6 +23,7 @@ interface GradeResult {
   question_number: number;
   score: number;
   feedback: string;
+  explanation: string;
 }
 
 const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview }: TheoryQuizProps) => {
@@ -381,6 +382,12 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
                                 {answers[i] || "(No answer provided)"}
                               </p>
                             </div>
+                            {grade?.explanation && (
+                              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                                <p className="font-medium text-sm mb-1 text-blue-400">📖 Explanation:</p>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{grade.explanation}</p>
+                              </div>
+                            )}
                             {grade?.feedback && (
                               <div className="bg-primary/5 rounded-lg p-3">
                                 <p className="font-medium text-sm mb-1">AI Feedback:</p>

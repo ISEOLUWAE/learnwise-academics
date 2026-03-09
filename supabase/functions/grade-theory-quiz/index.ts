@@ -209,7 +209,9 @@ Grade each answer on a scale of 0-10. Be thorough and fair. Consider:
 - Grade based on what the course content covers — do not penalize for missing information outside the course scope
 - When a reference answer is provided, use it as the gold standard for what constitutes a complete and correct answer
 
-For each question, provide brief but helpful feedback explaining the grade and what could be improved.`
+For each question, provide TWO things:
+1. "feedback" — brief feedback on the student's performance, what they got right/wrong, and what could be improved
+2. "explanation" — a clear, detailed explanation of the correct/ideal answer to the question so the student can learn and understand the topic better. This should be educational and comprehensive.`
           },
           {
             role: "user",
@@ -226,16 +228,17 @@ For each question, provide brief but helpful feedback explaining the grade and w
               properties: {
                 grades: {
                   type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      question_number: { type: "number" },
-                      score: { type: "number", minimum: 0, maximum: 10 },
-                      feedback: { type: "string" }
-                    },
-                    required: ["question_number", "score", "feedback"],
-                    additionalProperties: false
-                  }
+                    items: {
+                     type: "object",
+                     properties: {
+                       question_number: { type: "number" },
+                       score: { type: "number", minimum: 0, maximum: 10 },
+                       feedback: { type: "string" },
+                       explanation: { type: "string" }
+                     },
+                     required: ["question_number", "score", "feedback", "explanation"],
+                     additionalProperties: false
+                   }
                 }
               },
               required: ["grades"],
