@@ -228,16 +228,17 @@ For each question, provide TWO things:
               properties: {
                 grades: {
                   type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      question_number: { type: "number" },
-                      score: { type: "number", minimum: 0, maximum: 10 },
-                      feedback: { type: "string" }
-                    },
-                    required: ["question_number", "score", "feedback"],
-                    additionalProperties: false
-                  }
+                    items: {
+                     type: "object",
+                     properties: {
+                       question_number: { type: "number" },
+                       score: { type: "number", minimum: 0, maximum: 10 },
+                       feedback: { type: "string" },
+                       explanation: { type: "string" }
+                     },
+                     required: ["question_number", "score", "feedback", "explanation"],
+                     additionalProperties: false
+                   }
                 }
               },
               required: ["grades"],
