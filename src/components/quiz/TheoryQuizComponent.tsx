@@ -65,19 +65,42 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
     setGenerating(true);
 
     try {
-      // Check for pre-made questions in the quiz bank first
+      // ALWAYS prioritize banked questions first — no repeats until all are exhausted
       const { data: bankQuestions } = await supabase
         .from('theory_quiz_bank')
-        .select('question, reference_answer')
+        .select('id, question, reference_answer')
         .eq('course_id', courseId);
 
-      if (bankQuestions && bankQuestions.length >= count) {
-        // Randomly select from bank
-        const shuffled = [...bankQuestions].sort(() => Math.random() - 0.5);
-        const selected = shuffled.slice(0, count);
+      if (bankQuestions && bankQuestions.length > 0) {
+        // Get previously asked question IDs for this user+course from submissions
+        const { data: previousSubmissions } = await supabase
+          .from('theory_quiz_submissions')
+          .select('question')
+          .eq('course_id', courseId)
+          .eq('user_id', user?.id || '');
+
+        const previouslyAskedQuestions = new Set(
+          (previousSubmissions || []).map(s => s.question)
+        );
+
+        // Filter out already-asked questions
+        let unseenQuestions = bankQuestions.filter(
+          q => !previouslyAskedQuestions.has(q.question)
+        );
+
+        // If all questions have been asked, reset — allow full bank again
+        if (unseenQuestions.length === 0) {
+          unseenQuestions = [...bankQuestions];
+          toast.info("All banked questions completed! Starting a new cycle.");
+        }
+
+        // Randomly select up to `count` from unseen
+        const shuffled = [...unseenQuestions].sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+
         setQuestions(selected.map(q => q.question));
         setReferenceAnswers(selected.map(q => q.reference_answer));
-        setAnswers(new Array(count).fill(""));
+        setAnswers(new Array(selected.length).fill(""));
         setCurrentQuestion(0);
         setQuizStarted(true);
         setQuizCompleted(false);
@@ -87,7 +110,7 @@ const TheoryQuizComponent = ({ courseId, courseTitle, courseCode, courseOverview
         return;
       }
 
-      // Fallback: AI generates questions from course overview
+      // Fallback ONLY if NO banked questions exist at all: AI generates from course content
       const [materialsRes, textbooksRes] = await Promise.all([
         supabase.from('materials').select('title, type').eq('course_id', courseId),
         supabase.from('textbooks').select('title, author').eq('course_id', courseId),
