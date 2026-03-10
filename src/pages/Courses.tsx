@@ -86,8 +86,12 @@ const Courses = () => {
 
   const handleSearch = () => {
     const filtered = courses.filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.code.toLowerCase().includes(searchTerm.toLowerCase());
+      const search = searchTerm.toLowerCase().replace(/\s+/g, '');
+      const codeNormalized = course.code.toLowerCase().replace(/\s+/g, '');
+      const titleNormalized = course.title.toLowerCase();
+      const matchesSearch = !search || 
+                           codeNormalized.includes(search) ||
+                           titleNormalized.includes(searchTerm.toLowerCase());
       const matchesLevel = !selectedLevel || course.level === selectedLevel;
       const matchesSemester = !selectedSemester || course.semester === selectedSemester;
       
