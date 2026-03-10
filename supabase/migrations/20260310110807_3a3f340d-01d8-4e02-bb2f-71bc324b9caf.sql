@@ -1,0 +1,44 @@
+-- Delete SEN201 Assignment - Waterfall Model Real-World Applications from materials
+DELETE FROM materials WHERE id = 'a536aabe-4df4-400c-8508-9025f173c134';
+
+-- Add theory quiz bank questions for SEN 201
+INSERT INTO theory_quiz_bank (course_id, question, reference_answer) VALUES
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'What is Software Engineering? Use a case study to briefly explain the phases in the development of software.',
+'Software Engineering is the systematic application of engineering principles to the design, development, testing, deployment, and maintenance of software systems. Case Study - University Student Portal: 1) Requirements Analysis - gather needs from students, lecturers, administrators. 2) System Design - architecture diagrams, database schemas, UI wireframes. 3) Implementation - develop frontend, backend, and database components. 4) Testing - unit, integration, system, and user acceptance testing. 5) Deployment - deploy to servers, configure domains. 6) Maintenance - bug fixes, new features, performance optimization.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'What is prototyping? Propose a case study that is implementable and feasible for a real-life scenario in software development. Adopt a software prototyping technique to succinctly demonstrate the basic steps you should follow to achieve the best strategic implementation plan for your proposed design. List all the types of prototyping, and specify the appropriate one for this case study.',
+'Prototyping is building an early approximation of a final system to visualize, test, and refine requirements. Case Study: Mobile Banking App using Evolutionary Prototyping - Step 1: Identify requirements (login, balance, transfers). Step 2: Develop initial prototype with core screens. Step 3: Present to stakeholders for feedback. Step 4: Refine based on feedback. Step 5: Iterate until final product. Types: 1) Throwaway/Rapid Prototyping 2) Evolutionary Prototyping 3) Incremental Prototyping 4) Extreme Prototyping. Appropriate: Evolutionary Prototyping - continuous refinement based on feedback, prototype evolves into production system.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'Explain the components of the spiral model diagram.',
+'The Spiral Model has four quadrants: 1) Planning/Objective Setting - determining objectives, alternatives, constraints. 2) Risk Analysis - identifying and evaluating risks, prototyping to reduce risk. 3) Engineering/Development - design, coding, integration, testing. 4) Evaluation/Customer Review - customer evaluates current version, feedback gathered. Additional: each spiral is an iteration, radius represents cumulative cost, angular dimension represents progress, combines Waterfall and prototyping approaches, commitment partition separates cycles.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'Use a case study to present diagrammatic features of a spiral model diagram.',
+'Case Study: E-Commerce Platform. Spiral 1 (Concept): Planning - define core requirements; Risk Analysis - assess competition; Engineering - concept prototype; Evaluation - stakeholder review. Spiral 2 (Design): Planning - detail requirements; Risk - payment security; Engineering - architecture and DB design; Evaluation - technical review. Spiral 3 (Development): Planning - sprint planning; Risk - performance testing; Engineering - build auth, catalog, cart, payments; Evaluation - beta testing. Spiral 4 (Deployment): Planning - enhancement features; Risk - scalability audit; Engineering - integration and deployment; Evaluation - UAT and launch. Diagrammatic features: spiral grows outward showing increasing cost, each quadrant visited every spiral, shows iterative refinement with risk management.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'Using a hospital management system as a case study, explain how the Waterfall Model would be applied in its development. Highlight the strengths and weaknesses of this approach.',
+'Hospital Management System - Waterfall: 1) Requirements - gather from doctors, nurses, admin; features include patient registration, appointments, medical records, billing. 2) Design - client-server architecture, database schema, UI layouts. 3) Implementation - code modules sequentially. 4) Testing - verify each module, integration testing. 5) Deployment - install, migrate records, train staff. 6) Maintenance - bug fixes, updates. Strengths: clear documentation (healthcare compliance), defined milestones, easy to manage. Weaknesses: inflexible to regulatory changes, late testing is costly, users see system only at deployment, long development time.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'Compare and contrast Agile and Waterfall methodologies using the development of a food delivery mobile application as a case study.',
+'Food Delivery App - Waterfall: all requirements upfront, sequential phases, single deployment after 12-18 months. Agile: Sprint 1-2 MVP (registration, listing, ordering), Sprint 3-4 (payments, delivery status), Sprint 5-6 (GPS tracking, notifications), Sprint 7-8 (ratings, analytics), deployments every 2-4 weeks. Comparison: Flexibility - Agile adapts, Waterfall fixed. Customer involvement - Agile every sprint, Waterfall beginning/end. Risk - Agile reduces via iterations. Time to market - Agile weeks, Waterfall months. Testing - Agile continuous, Waterfall at end. Conclusion: Agile preferred for competitive market with changing expectations.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'Discuss the V-Model of software development. Use the development of an online examination system as a case study to illustrate each phase.',
+'V-Model extends Waterfall with corresponding testing phases. Online Exam System - Left side: 1) Requirements (login, scheduling, question bank, timer, grading) maps to Acceptance Testing. 2) System Design (web architecture, microservices) maps to System Testing. 3) High-Level Design (modules: Auth, Exam, Grading) maps to Integration Testing. 4) Low-Level Design (timer logic, randomization) maps to Unit Testing. Bottom: Coding. Right side: Unit Testing (timer accuracy, scoring), Integration Testing (submission triggers grading), System Testing (full flow, load test 1000 users), Acceptance Testing (real users verify requirements). Advantages: early test planning, traceability. Disadvantages: rigid, no prototyping.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'Explain the concept of Software Development Life Cycle (SDLC). Discuss at least four SDLC models, stating their advantages and disadvantages.',
+'SDLC is a structured framework for developing software from inception to retirement. Models: 1) Waterfall - simple, documented, clear milestones; but inflexible, late testing. 2) Agile - flexible, continuous customer involvement, early delivery; but needs experienced team, scope creep risk. 3) Spiral - strong risk management, good for large projects; but expensive, complex. 4) V-Model - early test planning, clear dev-testing relationship; but rigid, no prototyping. 5) Iterative - working software early, easier testing; but requires good planning.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'A university wants to develop a Learning Management System (LMS). As a software engineer, propose an appropriate software process model and justify your choice. Outline how you would implement each phase.',
+'Proposed: Agile Scrum with Incremental Delivery. Justification: evolving requirements, semester deadlines, multiple stakeholders, risk mitigation through feedback. Implementation: Sprint 1-2 (auth, roles, course creation, content upload), Sprint 3-4 (video streaming, assignments, grading), Sprint 5-6 (forums, announcements, messaging), Sprint 7-8 (quiz engine, automated grading, analytics), Sprint 9-10 (mobile optimization, plagiarism detection, reports). Each sprint: Planning, Development, Testing, Review, Retrospective.'),
+
+('441840da-c695-44cb-8810-d5265ddf7b9e',
+'What is Rapid Application Development (RAD)? Using the development of a Point-of-Sale (POS) system for a retail store as a case study, explain how RAD methodology would be applied.',
+'RAD emphasizes rapid prototyping and iterative delivery over lengthy cycles. POS System: Phase 1 - Requirements Planning (1-2 weeks): meet stakeholders, identify needs (scanning, payments, inventory, reporting). Phase 2 - User Design (2-3 weeks): interactive prototypes, workshops with cashiers. Phase 3 - Construction (3-4 weeks): rapid development with pre-built components, barcode scanning, payment processing, inventory alerts, parallel team development. Phase 4 - Cutover (1-2 weeks): data migration, training, parallel running, deployment. Total: 8-11 weeks. Advantages: fast delivery, high user involvement. Limitations: requires committed users, may produce less scalable architecture.');
