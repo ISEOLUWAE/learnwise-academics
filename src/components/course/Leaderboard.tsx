@@ -194,19 +194,19 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className={`flex items-center justify-between p-3 rounded-lg border transition-all ${getRankStyle(index)} ${
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-all overflow-hidden ${getRankStyle(index)} ${
                     user && entry.user_id === user.id ? 'ring-2 ring-primary/50' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex items-center justify-center w-8 h-8 shrink-0">
                       {getRankIcon(index)}
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold shrink-0">
                       {entry.avatar}
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-sm">
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm truncate">
                         {entry.name}
                         {user && entry.user_id === user.id && (
                           <span className="text-xs text-primary ml-2">(You)</span>
@@ -215,7 +215,7 @@ const Leaderboard = ({ courseId }: LeaderboardProps) => {
                       <p className="text-xs text-muted-foreground">Rank #{index + 1}</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0 ml-2">
                     <p className={`font-bold text-lg ${getScoreColor(entry.score)}`}>{entry.score}%</p>
                   </div>
                 </motion.div>
