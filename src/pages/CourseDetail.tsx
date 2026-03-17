@@ -231,7 +231,23 @@ const CourseDetail = () => {
   };
 
   const handleViewMaterial = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // For relative URLs, build full URL
+    let fullUrl = url;
+    if (url.startsWith('/')) {
+      fullUrl = `${window.location.origin}${url}`;
+    }
+    
+    // Check if it's a file type that browsers download instead of view
+    const officeExtensions = ['.pptx', '.ppt', '.docx', '.doc', '.xlsx', '.xls'];
+    const isOfficeFile = officeExtensions.some(ext => fullUrl.toLowerCase().endsWith(ext));
+    
+    if (isOfficeFile) {
+      // Use Google Docs Viewer to render office files inline
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=false`;
+      window.open(viewerUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleQuizAccess = () => true;
