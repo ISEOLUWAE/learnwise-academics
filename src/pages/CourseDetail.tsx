@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, 
-  Download, 
   Video, 
   FileText, 
   Trophy, 
@@ -18,7 +17,8 @@ import {
   Clock,
   GraduationCap,
   Play,
-  Bot
+  Bot,
+  Eye
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
 import TheoryQuizComponent from "@/components/quiz/TheoryQuizComponent";
