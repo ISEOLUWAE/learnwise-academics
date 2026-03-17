@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, 
-  Download, 
   Video, 
   FileText, 
   Trophy, 
@@ -18,7 +17,8 @@ import {
   Clock,
   GraduationCap,
   Play,
-  Bot
+  Bot,
+  Eye
 } from "lucide-react";
 import QuizComponent from "@/components/quiz/QuizComponent";
 import TheoryQuizComponent from "@/components/quiz/TheoryQuizComponent";
@@ -230,8 +230,8 @@ const CourseDetail = () => {
     }
   };
 
-  const handleDownloadClick = (url: string) => {
-    window.open(url, '_blank');
+  const handleViewMaterial = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleQuizAccess = () => true;
@@ -392,10 +392,10 @@ const CourseDetail = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleDownloadClick(book.download_link)}
+                              onClick={() => handleViewMaterial(book.download_link)}
                             >
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
+                              <BookOpen className="h-4 w-4 mr-2" />
+                              View
                             </Button>
                           </CardContent>
                         </Card>
@@ -427,7 +427,7 @@ const CourseDetail = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleDownloadClick(material.link)}
+                              onClick={() => handleViewMaterial(material.link)}
                             >
                               {material.type === "video" ? <Play className="h-4 w-4 mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
                               {material.type === "video" ? "Watch" : "View"}
@@ -457,10 +457,10 @@ const CourseDetail = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleDownloadClick(question.link)}
+                              onClick={() => handleViewMaterial(question.link)}
                             >
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
                             </Button>
                           </CardContent>
                         </Card>
