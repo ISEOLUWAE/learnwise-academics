@@ -397,7 +397,6 @@ const CourseDetail = () => {
                               <BookOpen className="h-4 w-4 mr-2" />
                               View
                             </Button>
-                            </Button>
                           </CardContent>
                         </Card>
                       </motion.div>
