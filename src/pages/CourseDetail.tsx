@@ -428,7 +428,7 @@ const CourseDetail = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleDownloadClick(material.link)}
+                              onClick={() => handleViewMaterial(material.link)}
                             >
                               {material.type === "video" ? <Play className="h-4 w-4 mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
                               {material.type === "video" ? "Watch" : "View"}
