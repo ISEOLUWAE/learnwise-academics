@@ -39,6 +39,15 @@ interface TheorySubmission {
   created_at: string;
 }
 
+interface TheorySession {
+  created_at: string;
+  submissions: TheorySubmission[];
+  totalScore: number;
+  totalMax: number;
+  allGraded: boolean;
+  questionCount: number;
+}
+
 interface QuizHistoryProps {
   courseId: string;
   courseTitle: string;
@@ -52,7 +61,7 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
   const [theoryLoading, setTheoryLoading] = useState(true);
   const [selectedQuiz, setSelectedQuiz] = useState<QuizHistoryEntry | null>(null);
   const [showReview, setShowReview] = useState(false);
-  const [selectedTheory, setSelectedTheory] = useState<TheorySubmission | null>(null);
+  const [selectedSession, setSelectedSession] = useState<TheorySession | null>(null);
   const [showTheoryReview, setShowTheoryReview] = useState(false);
 
   useEffect(() => {
@@ -107,6 +116,24 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
     }
   };
 
+  // Group theory submissions by created_at (same timestamp = same session)
+  const theorySessions: TheorySession[] = (() => {
+    const groups: Record<string, TheorySubmission[]> = {};
+    theoryHistory.forEach(sub => {
+      const key = sub.created_at;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(sub);
+    });
+    return Object.entries(groups)
+      .map(([created_at, submissions]) => {
+        const totalScore = submissions.reduce((sum, s) => sum + (s.ai_score || 0), 0);
+        const totalMax = submissions.reduce((sum, s) => sum + (s.max_score || 10), 0);
+        const allGraded = submissions.every(s => s.graded);
+        return { created_at, submissions, totalScore, totalMax, allGraded, questionCount: submissions.length };
+      })
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  })();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -124,8 +151,8 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
     return "text-red-400";
   };
 
-  const getTheoryScoreColor = (score: number | null, max: number | null) => {
-    if (score === null || max === null) return "text-muted-foreground";
+  const getTheoryScoreColor = (score: number, max: number) => {
+    if (max === 0) return "text-muted-foreground";
     const pct = (score / max) * 100;
     if (pct >= 80) return "text-green-400";
     if (pct >= 60) return "text-yellow-400";
@@ -160,13 +187,13 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
         <CardContent>
           <Tabs defaultValue="mcq" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="mcq" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
+              <TabsTrigger value="mcq" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 MCQ ({history.length})
               </TabsTrigger>
-              <TabsTrigger value="theory" className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                Theory ({theoryHistory.length})
+              <TabsTrigger value="theory" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+                Theory ({theorySessions.length})
               </TabsTrigger>
             </TabsList>
 
@@ -182,8 +209,8 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
                   <p className="text-muted-foreground">No MCQ attempts yet. Start a quiz to see your history!</p>
                 </div>
               ) : (
-                <ScrollArea className="h-[500px] pr-4">
-                  <div className="space-y-4">
+                <ScrollArea className="h-[500px] pr-2 sm:pr-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {history.map((entry, index) => (
                       <motion.div
                         key={entry.id}
@@ -192,37 +219,37 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                       >
                         <Card className="bg-bg-primary/50 border-white/5 hover:border-white/10 transition-colors">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
+                          <CardContent className="p-3 sm:p-4">
+                            <div className="flex items-center justify-between gap-2">
                               <div className="space-y-2 flex-1 min-w-0">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 sm:gap-3">
                                   <Badge variant="outline" className={getScoreColor(entry.score)}>
                                     {entry.score}%
                                   </Badge>
-                                  <span className="text-sm text-muted-foreground">
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
                                     {entry.total_questions} questions
                                   </span>
                                 </div>
-                                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                                <div className="flex flex-wrap gap-2 sm:gap-3 text-xs text-muted-foreground">
                                   <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{formatDate(entry.created_at)}</span>
+                                    <Calendar className="h-3 w-3 shrink-0" />
+                                    <span className="truncate">{formatDate(entry.created_at)}</span>
                                   </div>
                                   {entry.time_taken && (
                                     <div className="flex items-center gap-1">
-                                      <Clock className="h-3 w-3" />
+                                      <Clock className="h-3 w-3 shrink-0" />
                                       <span>{formatTime(entry.time_taken)}</span>
                                     </div>
                                   )}
                                   <div className="flex items-center gap-1">
-                                    <Trophy className="h-3 w-3" />
+                                    <Trophy className="h-3 w-3 shrink-0" />
                                     <span>{entry.questions_data.filter(q => q.is_correct).length}/{entry.total_questions} correct</span>
                                   </div>
                                 </div>
                               </div>
-                              <Button variant="ghost" size="sm" onClick={() => { setSelectedQuiz(entry); setShowReview(true); }}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Review
+                              <Button variant="ghost" size="sm" className="shrink-0 px-2 sm:px-3" onClick={() => { setSelectedQuiz(entry); setShowReview(true); }}>
+                                <Eye className="h-4 w-4" />
+                                <span className="hidden sm:inline ml-2">Review</span>
                                 <ChevronRight className="h-4 w-4 ml-1" />
                               </Button>
                             </div>
@@ -241,45 +268,53 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
                   <p className="text-muted-foreground">Loading theory history...</p>
                 </div>
-              ) : theoryHistory.length === 0 ? (
+              ) : theorySessions.length === 0 ? (
                 <div className="py-8 text-center">
                   <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <p className="text-muted-foreground">No theory attempts yet. Try the Theory Quiz!</p>
                 </div>
               ) : (
-                <ScrollArea className="h-[500px] pr-4">
-                  <div className="space-y-4">
-                    {theoryHistory.map((entry, index) => (
+                <ScrollArea className="h-[500px] pr-2 sm:pr-4">
+                  <div className="space-y-3 sm:space-y-4">
+                    {theorySessions.map((session, index) => (
                       <motion.div
-                        key={entry.id}
+                        key={session.created_at}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                       >
                         <Card className="bg-bg-primary/50 border-white/5 hover:border-white/10 transition-colors">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
+                          <CardContent className="p-3 sm:p-4">
+                            <div className="flex items-center justify-between gap-2">
                               <div className="space-y-2 flex-1 min-w-0">
-                                <div className="flex items-center gap-3">
-                                  {entry.graded ? (
-                                    <Badge variant="outline" className={getTheoryScoreColor(entry.ai_score, entry.max_score)}>
-                                      {entry.ai_score}/{entry.max_score}
+                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                  {session.allGraded ? (
+                                    <Badge variant="outline" className={getTheoryScoreColor(session.totalScore, session.totalMax)}>
+                                      {session.totalScore}/{session.totalMax}
                                     </Badge>
                                   ) : (
                                     <Badge variant="outline" className="text-muted-foreground">Pending</Badge>
                                   )}
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {session.questionCount} question{session.questionCount > 1 ? 's' : ''}
+                                  </span>
                                 </div>
-                                <p className="text-sm text-muted-foreground truncate">{entry.question.substring(0, 80)}...</p>
-                                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                                <div className="flex flex-wrap gap-2 sm:gap-3 text-xs text-muted-foreground">
                                   <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{formatDate(entry.created_at)}</span>
+                                    <Calendar className="h-3 w-3 shrink-0" />
+                                    <span className="truncate">{formatDate(session.created_at)}</span>
                                   </div>
+                                  {session.allGraded && (
+                                    <div className="flex items-center gap-1">
+                                      <Trophy className="h-3 w-3 shrink-0" />
+                                      <span>{Math.round((session.totalScore / session.totalMax) * 100)}%</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                              <Button variant="ghost" size="sm" onClick={() => { setSelectedTheory(entry); setShowTheoryReview(true); }}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Review
+                              <Button variant="ghost" size="sm" className="shrink-0 px-2 sm:px-3" onClick={() => { setSelectedSession(session); setShowTheoryReview(true); }}>
+                                <Eye className="h-4 w-4" />
+                                <span className="hidden sm:inline ml-2">Review</span>
                                 <ChevronRight className="h-4 w-4 ml-1" />
                               </Button>
                             </div>
@@ -297,62 +332,62 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
 
       {/* MCQ Review Dialog */}
       <Dialog open={showReview} onOpenChange={setShowReview}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>Quiz Review - {selectedQuiz && formatDate(selectedQuiz.created_at)}</DialogTitle>
+            <DialogTitle className="text-sm sm:text-base">Quiz Review - {selectedQuiz && formatDate(selectedQuiz.created_at)}</DialogTitle>
           </DialogHeader>
           {selectedQuiz && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 bg-bg-secondary/50 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <Badge variant="outline" className={`text-lg ${getScoreColor(selectedQuiz.score)}`}>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 sm:p-4 bg-bg-secondary/50 rounded-lg">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <Badge variant="outline" className={`text-base sm:text-lg ${getScoreColor(selectedQuiz.score)}`}>
                     Score: {selectedQuiz.score}%
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     {selectedQuiz.questions_data.filter(q => q.is_correct).length}/{selectedQuiz.total_questions} correct
                   </span>
                 </div>
                 {selectedQuiz.time_taken && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
                     <Clock className="h-4 w-4" />
                     <span>{formatTime(selectedQuiz.time_taken)}</span>
                   </div>
                 )}
               </div>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {selectedQuiz.questions_data.map((q, index) => (
                   <Card key={index} className="bg-bg-secondary/30">
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <span className="text-muted-foreground">Question {index + 1}</span>
-                        {q.is_correct ? <CheckCircle className="h-5 w-5 text-green-400" /> : <XCircle className="h-5 w-5 text-red-400" />}
+                    <CardHeader className="p-3 sm:p-6">
+                      <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                        <span className="text-muted-foreground">Q{index + 1}</span>
+                        {q.is_correct ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" /> : <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="text-lg font-medium">{renderContent(q.question)}</div>
+                    <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0 space-y-3 sm:space-y-4">
+                      <div className="text-sm sm:text-lg font-medium">{renderContent(q.question)}</div>
                       <div className="space-y-2">
                         {q.options.map((option, optIndex) => {
                           const isCorrect = optIndex === q.correct_answer;
                           const isUserAnswer = optIndex === q.user_answer;
                           return (
-                            <div key={optIndex} className={`p-3 rounded-lg border transition-colors ${
+                            <div key={optIndex} className={`p-2 sm:p-3 rounded-lg border text-xs sm:text-sm transition-colors ${
                               isCorrect ? "bg-green-500/20 border-green-500 text-green-300"
                               : isUserAnswer && !isCorrect ? "bg-red-500/20 border-red-500 text-red-300"
                               : "bg-bg-secondary/30 border-white/5"
                             }`}>
-                              <div className="flex items-center gap-2">
-                                {isCorrect && <CheckCircle className="h-4 w-4" />}
-                                {isUserAnswer && !isCorrect && <XCircle className="h-4 w-4" />}
-                                <div className="flex-1">{renderContent(option)}</div>
+                              <div className="flex items-start gap-2">
+                                {isCorrect && <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 shrink-0" />}
+                                {isUserAnswer && !isCorrect && <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 shrink-0" />}
+                                <div className="flex-1 min-w-0 break-words">{renderContent(option)}</div>
                               </div>
                             </div>
                           );
                         })}
                       </div>
                       {q.explanation && (
-                        <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-                          <h4 className="font-semibold text-blue-400 mb-2">Explanation:</h4>
-                          <div className="text-sm text-muted-foreground">{renderContent(q.explanation)}</div>
+                        <div className="p-3 sm:p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                          <h4 className="font-semibold text-blue-400 mb-2 text-xs sm:text-sm">Explanation:</h4>
+                          <div className="text-xs sm:text-sm text-muted-foreground">{renderContent(q.explanation)}</div>
                         </div>
                       )}
                     </CardContent>
@@ -364,59 +399,78 @@ const QuizHistory = ({ courseId, courseTitle }: QuizHistoryProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Theory Review Dialog */}
+      {/* Theory Session Review Dialog */}
       <Dialog open={showTheoryReview} onOpenChange={setShowTheoryReview}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>Theory Review - {selectedTheory && formatDate(selectedTheory.created_at)}</DialogTitle>
+            <DialogTitle className="text-sm sm:text-base">Theory Review - {selectedSession && formatDate(selectedSession.created_at)}</DialogTitle>
           </DialogHeader>
-          {selectedTheory && (
-            <div className="space-y-6">
-              {selectedTheory.graded && (
-                <div className="flex items-center justify-between p-4 bg-bg-secondary/50 rounded-lg">
-                  <Badge variant="outline" className={`text-lg ${getTheoryScoreColor(selectedTheory.ai_score, selectedTheory.max_score)}`}>
-                    Score: {selectedTheory.ai_score}/{selectedTheory.max_score}
-                  </Badge>
+          {selectedSession && (
+            <div className="space-y-4 sm:space-y-6">
+              {/* Session Summary */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 sm:p-4 bg-bg-secondary/50 rounded-lg">
+                <div className="flex items-center gap-3 flex-wrap">
+                  {selectedSession.allGraded ? (
+                    <Badge variant="outline" className={`text-base sm:text-lg ${getTheoryScoreColor(selectedSession.totalScore, selectedSession.totalMax)}`}>
+                      Total: {selectedSession.totalScore}/{selectedSession.totalMax}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-muted-foreground">Grading in progress...</Badge>
+                  )}
+                  <span className="text-xs sm:text-sm text-muted-foreground">
+                    {selectedSession.questionCount} question{selectedSession.questionCount > 1 ? 's' : ''}
+                  </span>
                 </div>
-              )}
+                {selectedSession.allGraded && (
+                  <Badge variant="outline" className={getTheoryScoreColor(selectedSession.totalScore, selectedSession.totalMax)}>
+                    {Math.round((selectedSession.totalScore / selectedSession.totalMax) * 100)}%
+                  </Badge>
+                )}
+              </div>
 
-              <Card className="bg-bg-secondary/30">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-primary" />
-                    Question
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg font-medium">{selectedTheory.question}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-bg-secondary/30">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    Your Answer
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm whitespace-pre-wrap">{selectedTheory.answer}</p>
-                </CardContent>
-              </Card>
-
-              {selectedTheory.ai_feedback && (
-                <Card className="bg-blue-500/10 border-blue-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-base text-blue-400 flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5" />
-                      AI Feedback
+              {/* Each question in the session */}
+              {selectedSession.submissions.map((sub, index) => (
+                <Card key={sub.id} className="bg-bg-secondary/30 overflow-hidden">
+                  <CardHeader className="p-3 sm:p-6">
+                    <CardTitle className="text-sm sm:text-base flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                        <span>Question {index + 1}</span>
+                      </div>
+                      {sub.graded && (
+                        <Badge variant="outline" className={`text-xs sm:text-sm shrink-0 ${getTheoryScoreColor(sub.ai_score || 0, sub.max_score || 10)}`}>
+                          {sub.ai_score}/{sub.max_score}
+                        </Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedTheory.ai_feedback}</div>
+                  <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0 space-y-3 sm:space-y-4">
+                    {/* Question */}
+                    <div className="p-3 bg-bg-primary/50 rounded-lg">
+                      <p className="text-xs sm:text-sm font-medium break-words">{sub.question}</p>
+                    </div>
+
+                    {/* User's Answer */}
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-1">Your Answer:</h4>
+                      <div className="p-3 bg-bg-primary/30 rounded-lg border border-white/5">
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{sub.answer}</p>
+                      </div>
+                    </div>
+
+                    {/* AI Feedback & Explanation */}
+                    {sub.ai_feedback && (
+                      <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                        <h4 className="font-semibold text-blue-400 mb-2 text-xs sm:text-sm flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                          AI Feedback & Explanation
+                        </h4>
+                        <div className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap break-words">{sub.ai_feedback}</div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-              )}
+              ))}
             </div>
           )}
         </DialogContent>
