@@ -458,10 +458,10 @@ const CourseDetail = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleDownloadClick(question.link)}
+                              onClick={() => handleViewMaterial(question.link)}
                             >
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
                             </Button>
                           </CardContent>
                         </Card>
