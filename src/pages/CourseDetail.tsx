@@ -230,8 +230,8 @@ const CourseDetail = () => {
     }
   };
 
-  const handleDownloadClick = (url: string) => {
-    window.open(url, '_blank');
+  const handleViewMaterial = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleQuizAccess = () => true;
